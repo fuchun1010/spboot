@@ -22,8 +22,7 @@ public class WelComeController {
     if(!Objects.isNull(this.orderService)) {
       this.orderService.addOrder();
     }
-    WelComeResponse response = new WelComeResponse();
-    response.setWords("welcome fuchun to spring boot");
+    WelComeResponse response = new WelComeResponse("welcome fuchun to spring boot");
     return response;
   }
 
