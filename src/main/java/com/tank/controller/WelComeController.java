@@ -4,7 +4,9 @@ import com.tank.message.*;
 import com.tank.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+
 import static org.springframework.http.MediaType.*;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,16 +19,16 @@ import java.util.Objects;
 @RequestMapping(path = "/welcome")
 public class WelComeController {
 
-  @GetMapping(path = "/index",produces = APPLICATION_JSON_VALUE)
+  @GetMapping(path = "/index", produces = APPLICATION_JSON_VALUE)
   public WelComeResponse index() {
-    if(!Objects.isNull(this.orderService)) {
+    if (!Objects.isNull(this.orderService)) {
       this.orderService.addOrder();
     }
     WelComeResponse response = new WelComeResponse("welcome fuchun to spring boot");
     return response;
   }
 
-  @PostMapping(path = "/users",produces = APPLICATION_JSON_VALUE)
+  @PostMapping(path = "/users", produces = APPLICATION_JSON_VALUE)
   public ResponseEntity<Response<UsersResponse>> fetchUsers() {
     UsersResponse usersResponse = new UsersResponse();
     usersResponse.addUser(new User().setName("lisi").setJob("docter").setAddress(new Address().setLocation("Cq")))
@@ -48,29 +50,26 @@ public class WelComeController {
       path = "/user/{id}",
       produces = APPLICATION_JSON_VALUE
   )
-  public ResponseEntity<Response<UserResponse>> fetchUser(@PathVariable long id) {
+  public ResponseEntity<Response<User>> fetchUser(@PathVariable long id) {
     System.out.println("id-------->" + id);
-    UserResponse userResponse = new UserResponse();
     User user = new User();
     user.setName("lisi").setJob("driver").setAddress(new Address().setLocation("HN"));
-    userResponse.setUser(user);
+
     return new ResponseEntity<>(
-        new Response<>("", userResponse), HttpStatus.OK);
+        new Response<>("", user), HttpStatus.OK);
   }
 
   @GetMapping(
       path = "/user/id/{id}/job/{job}",
       produces = APPLICATION_JSON_VALUE
   )
-  public ResponseEntity<Response<UserResponse>> fetchUserByJob(@PathVariable("id") String id, @PathVariable("job") String job) {
+  public ResponseEntity<Response<User>> fetchUserByJob(@PathVariable("id") String id, @PathVariable("job") String job) {
     System.out.println("id------->" + id);
     System.out.println("job------>" + job);
-    UserResponse userResponse = new UserResponse();
     User user = new User();
     user.setName("lisi").setJob("driver").setAddress(new Address().setLocation("HN"));
-    userResponse.setUser(user);
     return new ResponseEntity<>(
-        new Response<>("", userResponse), HttpStatus.OK);
+        new Response<>("", user), HttpStatus.OK);
   }
 
 

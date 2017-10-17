@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+/**
+ * @author fuchun
+ */
 @Getter
 @Setter
 @Accessors(chain = true)
