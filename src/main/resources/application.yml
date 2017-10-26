@@ -6,6 +6,6 @@ logging:
 
 mysql:
   driver: com.mysql.jdbc.Driver
-  url:  jdbc:mysql://localhost:3306/demo?useSSL=false
+  url:  jdbc:mysql://localhost:3306/demo?useSSL=false&autoReconnect=true&failOverReadOnly=false&maxReconnects=50
   username: root
   password:

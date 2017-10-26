@@ -32,7 +32,7 @@ public class AsyncController {
       method = RequestMethod.GET,
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE
   )
-  public DeferredResult<ResponseEntity<List<User>>> asyncUser() {
+  public DeferredResult<ResponseEntity<List<User>>> asyncUsers() {
     DeferredResult<ResponseEntity<List<User>>> deferredResult = new DeferredResult<>();
     Observable<List<User>> observable = Observable.create(emitter -> {
       List<User> users = userDAO.findAll();
@@ -47,10 +47,14 @@ public class AsyncController {
     return deferredResult;
   }
 
-  private User initSingleUser() {
-    User user = new User();
-    user.setName("lisi").setJob("driver").setAddress(new Address().setLocation("Beijing"));
-    return user;
+  @RequestMapping(
+      path = "/sync/user",
+      method = RequestMethod.GET,
+      produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+  )
+  public ResponseEntity<List<User>> syncUsers() {
+    final List<User> users = userDAO.findAll();
+    return new ResponseEntity<List<User>>(users, OK);
   }
 
   @Autowired
