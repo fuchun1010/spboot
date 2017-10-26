@@ -20,12 +20,13 @@
         <maven-idea>2.2.1</maven-idea>
         <log-version>1.2.3</log-version>
         <log-4j>1.7.25</log-4j>
+        <spring-boot>1.5.8.RELEASE</spring-boot>
     </properties>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.7.RELEASE</version>
+        <version>1.5.8.RELEASE</version>
     </parent>
 
     <build>

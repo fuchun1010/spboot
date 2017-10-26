@@ -3,7 +3,9 @@ package com.tank.controller;
 import com.tank.message.Address;
 import com.tank.message.User;
 import io.reactivex.Single;
-import org.springframework.http.HttpStatus;
+
+import static org.springframework.http.HttpStatus.*;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -23,7 +25,7 @@ public class AsyncController {
   @RequestMapping(
       path = "/async/user",
       method = RequestMethod.GET,
-      produces = MediaType.APPLICATION_JSON_VALUE
+      produces = MediaType.APPLICATION_JSON_UTF8_VALUE
   )
   public DeferredResult<ResponseEntity<User>> asyncUser() {
     DeferredResult<ResponseEntity<User>> deferredResult = new DeferredResult<>();
@@ -32,9 +34,9 @@ public class AsyncController {
       emitter.onSuccess(user);
     });
     single.subscribe(
-        sub -> deferredResult.setResult(new ResponseEntity<>(sub, HttpStatus.OK)),
-        e -> deferredResult.setErrorResult(e)
-    );
+        sub -> deferredResult.setResult(new ResponseEntity<>(sub, OK)),
+        deferredResult::setErrorResult
+    ).dispose();
     return deferredResult;
   }
 
