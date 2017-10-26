@@ -4,31 +4,26 @@ import com.tank.message.*;
 import com.tank.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-
-import static org.springframework.http.MediaType.*;
-
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * @author fuchun
  */
+@CrossOrigin
 @RestController
-@RequestMapping(path = "/welcome")
 public class WelComeController {
 
-  @GetMapping(path = "/index", produces = APPLICATION_JSON_VALUE)
-  public WelComeResponse index() {
-    if (!Objects.isNull(this.orderService)) {
-      this.orderService.addOrder();
-    }
+  @RequestMapping(path = "/index", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
+  public ResponseEntity<WelComeResponse> index() {
     WelComeResponse response = new WelComeResponse("welcome fuchun to spring boot");
-    return response;
+    return new ResponseEntity<WelComeResponse>(response, HttpStatus.OK);
   }
 
-  @PostMapping(path = "/users", produces = APPLICATION_JSON_VALUE)
+  @RequestMapping(path = "/users", method = RequestMethod.POST, produces = APPLICATION_JSON_VALUE)
   public ResponseEntity<Response<UsersResponse>> fetchUsers() {
     UsersResponse usersResponse = new UsersResponse();
     usersResponse.addUser(new User().setName("lisi").setJob("docter").setAddress(new Address().setLocation("Cq")))
@@ -36,8 +31,9 @@ public class WelComeController {
     return new ResponseEntity<>(new Response<>("", usersResponse), HttpStatus.OK);
   }
 
-  @PostMapping(
+  @RequestMapping(
       path = "/createUser",
+      method = RequestMethod.POST,
       produces = APPLICATION_JSON_VALUE,
       consumes = APPLICATION_JSON_VALUE
   )
@@ -46,8 +42,9 @@ public class WelComeController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
-  @GetMapping(
+  @RequestMapping(
       path = "/user/{id}",
+      method = RequestMethod.GET,
       produces = APPLICATION_JSON_VALUE
   )
   public ResponseEntity<Response<User>> fetchUser(@PathVariable long id) {
@@ -59,7 +56,8 @@ public class WelComeController {
         new Response<>("", user), HttpStatus.OK);
   }
 
-  @GetMapping(
+  @RequestMapping(
+      method = RequestMethod.GET,
       path = "/user/id/{id}/job/{job}",
       produces = APPLICATION_JSON_VALUE
   )

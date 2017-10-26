@@ -1,16 +1,18 @@
 package com.tank.message;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.io.Serializable;
+
 /**
  * @author fuchun
  */
-@Getter
-@Setter
+@Data
 @Accessors(chain = true)
-public class User {
+public class User implements Serializable {
   private String job;
   private String name;
   private Address address;

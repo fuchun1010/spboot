@@ -1,9 +1,9 @@
 package com.tank.message;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
-import javax.validation.constraints.NotNull;
 import java.util.Optional;
 
 /**
@@ -19,6 +19,6 @@ public class Response<T> {
     this.data = data;
   }
 
-  private @NotNull T data;
+  private @NonNull T data;
   private String error;
 }
