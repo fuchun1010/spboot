@@ -1,0 +1,11 @@
+server:
+  port: 8080
+
+logging:
+  path: logs
+
+mysql:
+  driver: com.mysql.jdbc.Driver
+  url:  jdbc:mysql://localhost:3306/demo?useSSL=false
+  username: root
+  password:
