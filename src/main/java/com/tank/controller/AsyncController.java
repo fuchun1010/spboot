@@ -3,6 +3,7 @@ package com.tank.controller;
 import com.tank.dao.UserDAO;
 import com.tank.message.User;
 import io.reactivex.Observable;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.springframework.http.MediaType.*;
@@ -37,7 +38,7 @@ public class AsyncController {
   public DeferredResult<ResponseEntity<List<User>>> asyncUsers() {
     DeferredResult<ResponseEntity<List<User>>> deferredResult = new DeferredResult<>();
     Observable<List<User>> observable = Observable.create(emitter -> {
-      List<User> users = userDAO.findAll();
+      val users = userDAO.findAll();
       emitter.onNext(users);
     });
 
@@ -55,7 +56,7 @@ public class AsyncController {
       produces = APPLICATION_JSON_UTF8_VALUE
   )
   public ResponseEntity<List<User>> syncUsers() {
-    final List<User> users = userDAO.findAll();
+    val users = userDAO.findAll();
     return new ResponseEntity<>(users, OK);
   }
 
