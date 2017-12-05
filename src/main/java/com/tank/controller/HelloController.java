@@ -2,21 +2,23 @@ package com.tank.controller;
 
 import com.tank.message.Address;
 import com.tank.message.User;
-import org.springframework.http.HttpStatus;
+import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.springframework.http.HttpStatus.*;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 
@@ -38,4 +40,21 @@ public class HelloController {
     map.putIfAbsent("level", "senior");
     return new ResponseEntity<>(map, OK);
   }
+
+  @GetMapping(path = "/taskQueue", produces = APPLICATION_JSON_UTF8_VALUE)
+  public ResponseEntity<Map<String, String>> queued() {
+    val result = new ConcurrentHashMap<String, String>();
+    taskProcessor.submit(() -> {
+      while(true){
+        System.out.println(System.currentTimeMillis());
+      }
+    });
+    result.putIfAbsent("status", "success");
+    return new ResponseEntity<>(result, OK);
+  }
+
+  @Autowired
+  private ExecutorService taskProcessor;
+
+
 }
