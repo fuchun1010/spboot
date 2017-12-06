@@ -12,4 +12,6 @@ public class Header {
 
   private String type;
   private String name;
+  private String title;
+  private String key;
 }

@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tank.common.DataSource.OracleJdbcTemplate;
 import com.tank.domain.Header;
-import com.tank.domain.Row;
+import com.tank.message.preview.PreViewRes;
 import lombok.NonNull;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.sql.ResultSetMetaData;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author fuchun
@@ -22,38 +23,39 @@ import java.util.Map;
 public class PreViewDao {
 
 
-  public void preViewOracleTop10(@NonNull String username, @NonNull String password, @NonNull String url, @NonNull String sql) {
+  public PreViewRes preViewOracleTop10(@NonNull String username, @NonNull String password, @NonNull String url, @NonNull String sql) {
     JdbcTemplate jdbcTemplate = oracleJdbcTemplate.createJdbcTemple(username, password, url);
     val previewSql = oracleJdbcTemplate.wrapperPreview(sql);
-    List<Row> rows = Lists.newCopyOnWriteArrayList();
+    List<Map<String, String>> rows = Lists.newCopyOnWriteArrayList();
     List<Header> headers = Lists.newCopyOnWriteArrayList();
-
+    val counter = new AtomicInteger();
     jdbcTemplate.query(previewSql, rs -> {
       if (headers.isEmpty()) {
         ResultSetMetaData metaData = rs.getMetaData();
         val columnNum = metaData.getColumnCount() - 1;
         for (int i = 1; i <= columnNum; i++) {
-          val name = metaData.getColumnName(i);
-          val type = metaData.getColumnTypeName(i);
-          val header = new Header(type, name);
+          val name = metaData.getColumnName(i).toLowerCase();
+          val type = metaData.getColumnTypeName(i).toLowerCase();
+          val header = new Header(type, name, name, name);
           headers.add(header);
         }
       }
 
-      val row = new Row();
+
+      Map<String, String> row = Maps.newConcurrentMap();
       val columnNum = headers.size();
       for (int i = 0; i < columnNum; i++) {
         val header = headers.get(i);
         val fieldName = header.getName();
         val value = rs.getObject(fieldName).toString();
-        row.addValue(fieldName, value);
+        row.putIfAbsent(fieldName, value);
       }
+      row.putIfAbsent("key", String.valueOf(counter.incrementAndGet()));
       rows.add(row);
 
     });
 
-
-    System.out.println("-----------------------");
+    return new PreViewRes().setColumns(headers).setDataSource(rows);
 
   }
 
