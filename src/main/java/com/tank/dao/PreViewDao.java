@@ -15,11 +15,14 @@ import java.sql.ResultSetMetaData;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author fuchun
+ */
 @Service
-public class PriewDao {
+public class PreViewDao {
 
 
-  public void prewViewOracleTop10(@NonNull String username, @NonNull String password, @NonNull String url, @NonNull String sql) {
+  public void preViewOracleTop10(@NonNull String username, @NonNull String password, @NonNull String url, @NonNull String sql) {
     JdbcTemplate jdbcTemplate = oracleJdbcTemplate.createJdbcTemple(username, password, url);
     val previewSql = oracleJdbcTemplate.wrapperPreview(sql);
     List<Row> rows = Lists.newCopyOnWriteArrayList();
