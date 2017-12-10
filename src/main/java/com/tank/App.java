@@ -15,6 +15,7 @@ public class App {
 //    ImportedDataProcessor processor = context.getBean(ImportedDataProcessor.class);
 //    System.out.println(processor);
     SpringApplication.run(App.class, args);
+
   }
 
 

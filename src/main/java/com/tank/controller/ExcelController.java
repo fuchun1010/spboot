@@ -8,10 +8,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +19,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -47,6 +43,19 @@ public class ExcelController {
     }
     tips = fetchSchema(fileStatus);
     return new ResponseEntity(tips, OK);
+  }
+
+  @PostMapping(path = "/create-download")
+  public ResponseEntity<Map> createDownloadDir() {
+    val downloadPath = new File(".").getAbsolutePath().replace(".", "") + "dd2/";
+    val target = new File(downloadPath);
+    if (!target.isDirectory()) {
+      target.mkdir();
+    }
+    val map = new HashMap<String, String>();
+    map.putIfAbsent("status", "ok");
+
+    return new ResponseEntity<Map>(map, OK);
   }
 
   private Map<String, DataType> fetchSchema(@NonNull final String filePath) {
@@ -103,25 +112,28 @@ public class ExcelController {
   private DataType parseType(@NonNull final Cell cell) {
     val dataType = new DataType();
     if ("NUMERIC".equalsIgnoreCase(cell.getCellTypeEnum().name())) {
-      return dataType.setDataType("decimal").setLength(Optional.of(10));
+      return dataType.setDataType("decimal").setRequired(true).setLength(Optional.of(10));
     }
     if (isDate(cell.getStringCellValue())) {
-      return dataType.setDataType("date");
+      return dataType.setDataType("date").setLength(Optional.empty());
     }
-    return dataType.setDataType("varchar2").setLength(Optional.of(10));
-  }
-
-  private boolean isNumeric(@NonNull final String value) {
-    return value.matches("^[-+]?\\d+(\\.\\d+)?$");
+    return dataType.setDataType("varchar2").setLength(Optional.of(50));
   }
 
   private boolean isDate(@NonNull final String value) {
     String[] patters = {"yyyy-MM-dd", "yyyy-MM-dd hh:mm:ss"};
+    boolean isOk = false;
     try {
-      Stream.of(patters).forEach(pattern -> DateTimeFormatter.ofPattern(pattern).parse(value, LocalDate::from));
-      return true;
+      DateTimeFormatter.ofPattern(patters[0]).parse(value, LocalDate::from);
+      isOk = true;
+      if (isOk) {
+        return true;
+      }
+      DateTimeFormatter.ofPattern(patters[1]).parse(value, LocalDate::from);
+      isOk = true;
+      return isOk;
     } catch (DateTimeParseException e) {
-      return false;
+      return isOk;
     }
   }
 }
