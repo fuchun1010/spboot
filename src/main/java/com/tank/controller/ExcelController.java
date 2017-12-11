@@ -9,16 +9,19 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -58,6 +61,38 @@ public class ExcelController {
     return new ResponseEntity<Map>(map, OK);
   }
 
+
+  //curl -i -X POST -H "Content-Type: multipart/form-data" -F "file=@test.mp3" http://mysuperserver/media/1234/upload/
+  @PostMapping(path = "/upload")
+  public ResponseEntity<Map<String, String>> uploadFile(@RequestParam MultipartFile file) {
+    Map<String, String> map = new HashMap<>();
+
+    File downloadDir = new File(downLoadDirPath());
+    List<File> existedFiles = Stream.of(downloadDir.listFiles()).filter(existedFile -> existedFile.getName().equalsIgnoreCase(file.getName())).collect(Collectors.toList());
+    if (existedFiles.size() == 0) {
+
+      try {
+        String fileName = downLoadDirPath() + file.getOriginalFilename();
+        File tmpFile = new File(fileName);
+        if (!tmpFile.exists()) {
+          tmpFile.createNewFile();
+        }
+        byte[] data = file.getBytes();
+        FileOutputStream out = new FileOutputStream(tmpFile);
+        out.write(data);
+        out.flush();
+        out.close();
+        map.putIfAbsent("status", "ok");
+        return new ResponseEntity<>(map, OK);
+      } catch (IOException e) {
+        e.printStackTrace();
+        map.putIfAbsent("errors", e.getMessage());
+        return new ResponseEntity<>(map, INTERNAL_SERVER_ERROR);
+      }
+    }
+    return new ResponseEntity<>(map, OK);
+  }
+
   private Map<String, DataType> fetchSchema(@NonNull final String filePath) {
     val firstLineNo = 0;
     boolean isStar = true;
@@ -92,6 +127,16 @@ public class ExcelController {
       e.printStackTrace();
     }
     return map;
+  }
+
+
+  private String downLoadDirPath() {
+    val file = new File(".");
+    val absolutePath = file.getAbsolutePath().replace(".", "");
+    val sb = new StringBuffer();
+    sb.append(absolutePath);
+    sb.append("download/");
+    return sb.toString();
   }
 
   private File fetchDownloadFile(@NonNull final String fileName) {
