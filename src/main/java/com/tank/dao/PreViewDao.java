@@ -2,7 +2,7 @@ package com.tank.dao;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.tank.common.DataSource.OracleJdbcTemplate;
+import com.tank.common.DataSource.OracleSqlWrapper;
 import com.tank.domain.Header;
 import com.tank.message.preview.PreViewRes;
 import lombok.NonNull;
@@ -23,13 +23,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PreViewDao {
 
 
-  public PreViewRes preViewOracleTop10(@NonNull String username, @NonNull String password, @NonNull String url, @NonNull String sql) {
-    JdbcTemplate jdbcTemplate = oracleJdbcTemplate.createJdbcTemple(username, password, url);
-    val previewSql = oracleJdbcTemplate.wrapperPreview(sql);
+  public PreViewRes preViewOracleTop10( @NonNull String sql) {
+
+    val previewSql = oracleSqlWrapper.wrapperPreview(sql);
     List<Map<String, String>> rows = Lists.newCopyOnWriteArrayList();
     List<Header> headers = Lists.newCopyOnWriteArrayList();
     val counter = new AtomicInteger();
-    jdbcTemplate.query(previewSql, rs -> {
+    this.oracleJdncTemplate.query(previewSql, rs -> {
       if (headers.isEmpty()) {
         ResultSetMetaData metaData = rs.getMetaData();
         val columnNum = metaData.getColumnCount() - 1;
@@ -61,6 +61,9 @@ public class PreViewDao {
 
 
   @Autowired
-  private OracleJdbcTemplate oracleJdbcTemplate;
+  private OracleSqlWrapper oracleSqlWrapper;
+
+  @Autowired
+  private JdbcTemplate oracleJdncTemplate;
 
 }

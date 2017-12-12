@@ -1,7 +1,6 @@
 package com.tank.controller;
 
 import com.tank.dao.PreViewDao;
-import com.tank.message.preview.DataSourceInfo;
 import com.tank.message.preview.PreViewRes;
 import com.tank.message.preview.PreviewReq;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +29,9 @@ public class ElasticController {
     Map<String, String> map = new ConcurrentHashMap<>();
     map.put("properties", "elastic");
     String sql = previewReq.getSql();
-    DataSourceInfo dataSourceInfo = previewReq.getDataSourceInfo();
-    PreViewRes response = preViewDao.preViewOracleTop10(dataSourceInfo.getUsername(), dataSourceInfo.getPassword(), dataSourceInfo.toUrl().orElse(""), sql);
+    PreViewRes response = preViewDao.preViewOracleTop10(sql);
     return new ResponseEntity<>(response, OK);
+
   }
 
   @Autowired

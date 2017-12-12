@@ -6,28 +6,25 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-/**
- * @author fuchun
- */
 @Configuration
 @ComponentScan
 @EnableTransactionManagement
 @EnableAutoConfiguration
-@PropertySource(value = {"classpath:application.yml"})
-public class DataSourceConfig {
+public class OracleDataSourceConfig {
 
 
-  @Bean(name = "jdbcTemplate")
-  public JdbcTemplate initJdbcTemplate(DataSource dataSource) {
-    return new JdbcTemplate(dataSource);
+  @Bean(name = "oracleJdbcTemplate")
+  public JdbcTemplate createOracleDataSourceTemplate(DataSource oracleDataSource) {
+    return new JdbcTemplate(oracleDataSource);
   }
 
-  @Bean(name = "dataSource")
-  public DataSource initDataSource() {
+  @Bean(name = "oracleDataSource")
+  @Primary
+  public DataSource initOracleDataSource() {
     DataSource dataSource = new DataSource();
     dataSource.setUrl(url);
     dataSource.setDriverClassName(driver);
@@ -36,16 +33,13 @@ public class DataSourceConfig {
     return dataSource;
   }
 
-  private @Value("${mysql.driver}")
-  String driver;
 
-  private @Value("${mysql.url}")
-  String url;
-
-  private @Value("${mysql.username}")
-  String username;
-
-  private @Value("${mysql.password}")
-  String password;
-
+  @Value("${oracle.driver}")
+  private String driver;
+  @Value("${oracle.url}")
+  private String url;
+  @Value("${oracle.username}")
+  private String username;
+  @Value("${oracle.password}")
+  private String password;
 }
