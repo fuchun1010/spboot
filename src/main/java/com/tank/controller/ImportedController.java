@@ -1,8 +1,8 @@
 package com.tank.controller;
 
-import com.tank.common.toolkit.DirectoryToolKit;
+import static com.tank.common.toolkit.DirectoryToolKit.*;
 import com.tank.common.toolkit.ExcelRow;
-import com.tank.common.toolkit.ExcelToolkit;
+import static com.tank.common.toolkit.ExcelToolkit.*;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -27,7 +27,7 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 @RestController
 @CrossOrigin
 @RequestMapping(path = "/imported/api")
-public class ImportedController implements DirectoryToolKit, ExcelToolkit {
+public class ImportedController {
 
   @PostMapping(path = "/create-schema")
   public ResponseEntity<Map<String, String>> createTableWithSchema() {
@@ -60,6 +60,7 @@ public class ImportedController implements DirectoryToolKit, ExcelToolkit {
       }
       response.putIfAbsent("status", "ok");
     } catch (Exception e) {
+      e.printStackTrace();
       response.putIfAbsent("error", e.getLocalizedMessage());
       return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(response);
     }

@@ -1,72 +1,62 @@
 package com.tank.common.toolkit;
 
 import com.tank.exception.ExcelNotFoundException;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
-import static com.tank.common.toolkit.DateToolkit.*;
 
 /**
  * @author fuchun
  */
-public interface ExcelToolkit {
+public class ExcelToolkit {
 
-  default List<ExcelRow> readExcel(@NonNull String excelFilePath) throws IOException, InvalidFormatException {
+  public static List<ExcelRow> readExcel(@NonNull String excelFilePath) throws IOException, InvalidFormatException,ZipException {
     File file = new File(excelFilePath);
     if (!file.exists()) {
       throw new ExcelNotFoundException(excelFilePath + " not exists");
     }
     val rows = new LinkedList<ExcelRow>();
-    XSSFWorkbook wb = new XSSFWorkbook(file);
-    //Workbook wb = new SXSSFWorkbook(xlsxFile,-1);
+    //OPCPackage opc = OPCPackage.open(excelFilePath, PackageAccess.READ)
 
-    Iterator<Row> sheetRows = wb.getSheetAt(0).rowIterator();
-    while (sheetRows.hasNext()) {
-      Row row = sheetRows.next();
-      if(row.getRowNum() == 0) {
-        continue;
-      }
-      Iterator<Cell> rowCells = row.cellIterator();
-      ExcelRow excelRow = new ExcelRow();
-      while (rowCells.hasNext()) {
-        Cell cell = rowCells.next();
-        boolean isNumeric = cell.getCellTypeEnum() == CellType.NUMERIC;
-        if (isNumeric) {
-          excelRow.addCellValue(String.valueOf(cell.getNumericCellValue()));
-        } else {
-          String cellValue = cell.getStringCellValue();
-          if (Objects.isNull(cellValue) || cellValue.isEmpty()) {
-            excelRow.addCellValue(null);
-            continue;
-          }
-          if (isDate(cellValue)) {
-            if(isBasicDate(cellValue)) {
-              excelRow.addCellValue(toBasicDate(cellValue));
-            }
-            else {
-              excelRow.addCellValue(toDateWithTime(cellValue));
-            }
-            continue;
-          }
-          excelRow.addCellValue('"'+cellValue+'"');
-        }
-      }
-      rows.add(excelRow);
-    }
+    val zipFilePath = generateZipExcel(file);
+    unZipExcel(zipFilePath);
     return rows;
+  }
+
+
+  private static String generateZipExcel(File file) throws IOException {
+    String path = DirectoryToolKit.downloadDir();
+    val zipFile = new File(path + File.separator + file.getName().replace("xlsx", "zip"));
+    Path source = Paths.get(file.toURI());
+    FileOutputStream out = new FileOutputStream(zipFile);
+    Files.copy(source, out);
+    out.flush();
+    out.close();
+    return zipFile.getAbsolutePath();
+  }
+
+  private static String unZipExcel(String filePath) throws ZipException {
+    File zipFile = new File(filePath);
+    String dirName = zipFile.getName().replace(".zip", "");
+    val dirPath = DirectoryToolKit.downloadDir() + File.separator + dirName;
+    File unZipFolder = new File(dirPath);
+    if (!unZipFolder.exists()) {
+      unZipFolder.mkdir();
+    }
+    ZipFile sourceZip = new ZipFile(zipFile);
+    sourceZip.extractAll(unZipFolder.getAbsolutePath());
+    return "";
   }
 
 }

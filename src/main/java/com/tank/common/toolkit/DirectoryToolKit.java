@@ -7,13 +7,13 @@ import java.io.File;
 /**
  * @author fuchun
  */
-public interface DirectoryToolKit {
+public class DirectoryToolKit {
 
   /**
    * 获取下载目录
    * @return
    */
-  default String downloadDir() {
+  public static String downloadDir() {
     val currentPath = new File(".");
     val absolutePath = currentPath.getAbsolutePath().replace(".", "");
     val downloadPath = absolutePath + "download/";
