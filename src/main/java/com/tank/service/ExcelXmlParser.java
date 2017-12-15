@@ -51,7 +51,7 @@ public class ExcelXmlParser {
         val index = Integer.parseInt(value);
         String result = fetchStrContent(fileName, index);
         result = "empty".equalsIgnoreCase(result) ? null : result;
-        cell.setValue(result);
+        cell.setValue("'" + result + "'");
       } else {
 
         cell.setValue(value.toString());
@@ -68,15 +68,15 @@ public class ExcelXmlParser {
     Document document = reader.read(new File(path));
     Element root = document.getRootElement();
     boolean isContinue = true;
-    int counter =  0;
+    int counter = 0;
     String rs = "";
     Iterator<Element> children = root.elementIterator();
-    while(children.hasNext() && isContinue){
+    while (children.hasNext() && isContinue) {
       Element si = children.next();
       Element t = (Element) si.elementIterator().next();
-      if(counter == index) {
+      if (counter == index) {
         val data = t.getData();
-        rs = Objects.isNull(data)? "empty":data.toString();
+        rs = Objects.isNull(data) ? "empty" : data.toString();
         isContinue = false;
         continue;
       }
@@ -98,7 +98,10 @@ public class ExcelXmlParser {
       }
       excelRows.add(row);
     }
-    System.out.println("-----");
+
+    for(ExcelRow row: excelRows) {
+      System.out.println(row.toString());
+    }
 
   }
 
@@ -144,7 +147,7 @@ public class ExcelXmlParser {
 
   private String absoluteContentTypePath(final @NonNull String fileName) throws FileNotFoundException {
     val onlyFileName = fileName.replace(".xlsx", "");
-    val realPath = DirectoryToolKit.downloadDir() + separator + onlyFileName + separator +  "xl" + File.separator + "sharedStrings.xml";
+    val realPath = DirectoryToolKit.downloadDir() + separator + onlyFileName + separator + "xl" + File.separator + "sharedStrings.xml";
     val contentFile = new File(realPath);
     if (!contentFile.exists()) {
       throw new FileNotFoundException(fileName + " Content_Types.xml不正确");

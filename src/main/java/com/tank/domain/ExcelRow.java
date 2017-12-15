@@ -18,4 +18,12 @@ public class ExcelRow {
     cells.add(excelCell);
   }
 
+  @Override
+  public String toString() {
+    List<String> strs = new LinkedList<>();
+    for (ExcelCell cell : cells) {
+      strs.add(cell.toString());
+    }
+    return String.join(",", strs);
+  }
 }

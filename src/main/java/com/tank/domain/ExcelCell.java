@@ -13,6 +13,6 @@ public class ExcelCell {
 
   @Override
   public String toString() {
-    return super.toString();
+    return this.value;
   }
 }
