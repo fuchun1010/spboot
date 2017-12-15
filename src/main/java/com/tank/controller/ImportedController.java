@@ -51,10 +51,9 @@ public class ImportedController {
   @PostMapping(path = "/import-data")
   public ResponseEntity<Map<String, String>> importDataFromExcel() {
     val response = new HashMap<String, String>();
-    String xlsxPath = downloadDir() + "/Workbook.xlsx";
+    String xlsxPath = downloadDir() + "/Workbook1.xlsx";
     try {
-      Element sheetDataNode =  excelXmlParser.fetchSheetDataNode();
-      excelXmlParser.fetchRows(sheetDataNode);
+       excelXmlParser.fetchSheetDataNode("Workbook1.xlsx");
       response.putIfAbsent("status", "ok");
     } catch (Exception e) {
       e.printStackTrace();
