@@ -16,10 +16,6 @@ public class App {
 
   public static void main(final String... args) {
 
-//    ApplicationContext context = SpringApplication.run(App.class, args);
-//    ImportedDataProcessor processor = context.getBean(ImportedDataProcessor.class);
-//    System.out.println(processor);
-    //SpringApplication.run(App.class, args);
     ApplicationContext context = SpringApplication.run(App.class);
 
     BlockingQueue<String> queue = (BlockingQueue<String>) context.getBean("importSqlQueue");

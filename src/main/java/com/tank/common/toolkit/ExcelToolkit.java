@@ -21,21 +21,8 @@ import java.util.List;
  */
 public class ExcelToolkit {
 
-  public static List<ExcelRow> readExcel(@NonNull String excelFilePath) throws IOException, InvalidFormatException, ZipException {
-    File file = new File(excelFilePath);
-    if (!file.exists()) {
-      throw new ExcelNotFoundException(excelFilePath + " not exists");
-    }
-    val rows = new LinkedList<ExcelRow>();
-    //OPCPackage opc = OPCPackage.open(excelFilePath, PackageAccess.READ)
 
-    val zipFilePath = generateZipExcel(file);
-    val unzipFolderPath = unZipExcel(zipFilePath);
-    return rows;
-  }
-
-
-  private static String generateZipExcel(File file) throws IOException {
+  public static String generateZipExcel(File file) throws IOException {
     String path = DirectoryToolKit.downloadDir();
     val zipFile = new File(path + File.separator + file.getName().replace("xlsx", "zip"));
     Path source = Paths.get(file.toURI());
@@ -46,7 +33,7 @@ public class ExcelToolkit {
     return zipFile.getAbsolutePath();
   }
 
-  private static String unZipExcel(String filePath) throws ZipException {
+  public static String unZipExcel(String filePath) throws ZipException {
     File zipFile = new File(filePath);
     String dirName = zipFile.getName().replace(".zip", "");
     val dirPath = DirectoryToolKit.downloadDir() + File.separator + dirName;

@@ -1,9 +1,8 @@
 package com.tank.controller;
 
-import static com.tank.common.toolkit.DirectoryToolKit.*;
-import com.tank.common.toolkit.ExcelRow;
-import static com.tank.common.toolkit.ExcelToolkit.*;
+import com.tank.service.ExcelXmlParser;
 import lombok.val;
+import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import static com.tank.common.toolkit.DirectoryToolKit.downloadDir;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 /**
@@ -54,10 +53,8 @@ public class ImportedController {
     val response = new HashMap<String, String>();
     String xlsxPath = downloadDir() + "/Workbook.xlsx";
     try {
-      List<ExcelRow> rows = readExcel(xlsxPath);
-      for (ExcelRow row : rows) {
-        System.out.println(row.toString());
-      }
+      Element sheetDataNode =  excelXmlParser.fetchSheetDataNode();
+      excelXmlParser.fetchRows(sheetDataNode);
       response.putIfAbsent("status", "ok");
     } catch (Exception e) {
       e.printStackTrace();
@@ -69,5 +66,8 @@ public class ImportedController {
 
   @Autowired
   private JdbcTemplate oracleJdbcTemplate;
+
+  @Autowired
+  private ExcelXmlParser excelXmlParser;
 
 }
