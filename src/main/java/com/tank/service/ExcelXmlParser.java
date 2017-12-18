@@ -13,14 +13,13 @@ import org.dom4j.io.SAXReader;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-
-import static java.io.File.*;
-
 import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+
+import static java.io.File.separator;
 
 /**
  * @author fuchun
@@ -68,7 +67,7 @@ public class ExcelXmlParser {
       if (isHeaderOrStringType) {
         val index = Integer.parseInt(value);
         String result = fetchStrContent(fileName, index);
-        result = "null".equalsIgnoreCase(result) ? null : result;
+        result = Objects.isNull(result) ? null : result;
         if (Objects.isNull(result)) {
           cell.setValue(null);
         } else {
@@ -84,26 +83,26 @@ public class ExcelXmlParser {
 
 
   private String fetchStrContent(String fileName, int index) throws FileNotFoundException, DocumentException {
-    String path = this.absoluteContentTypePath(fileName);
-    SAXReader reader = new SAXReader();
-    Document document = reader.read(new File(path));
-    Element root = document.getRootElement();
-    boolean isContinue = true;
+    val path = this.absoluteContentTypePath(fileName);
+    if (!new File(path).exists()) {
+      throw new FileNotFoundException(fileName + " not exists");
+    }
+    val reader = new SAXReader();
+    val document = reader.read(new File(path));
+    val root = document.getRootElement();
     int counter = 0;
-    String rs = "";
     Iterator<Element> children = root.elementIterator();
-    while (children.hasNext() && isContinue) {
+    while (children.hasNext()) {
       Element si = children.next();
       Element t = (Element) si.elementIterator().next();
       if (counter == index) {
         val data = t.getData();
-        rs = Objects.isNull(data) ? "null" : data.toString();
-        isContinue = false;
-        continue;
+        val rs = Objects.isNull(data) ? null : data.toString();
+        return rs;
       }
       counter++;
     }
-    return rs;
+    return null;
   }
 
   /**
@@ -128,7 +127,9 @@ public class ExcelXmlParser {
       }
       excelRows.add(row);
     }
-
+    //给最后一行打标记,需要拼接的
+    ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
+    lastRow.isLast = true;
     for (ExcelRow row : excelRows) {
       System.out.println(row.toString());
     }
