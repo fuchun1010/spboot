@@ -15,3 +15,4 @@ oracle:
   url: jdbc:oracle:thin:@localhost:1521:xe
   username: fullsample
   password: fullsample
+  threshold: 2

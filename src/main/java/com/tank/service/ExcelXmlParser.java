@@ -11,6 +11,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -36,14 +37,15 @@ public class ExcelXmlParser {
    */
   public void importExcelToOracle(@NonNull final String fileName) throws FileNotFoundException, DocumentException {
     Element sheetDataNode = fetchSheetDataNode(fileName);
-    if(Objects.isNull(sheetDataNode)) {
-      throw  new DocumentException("sheetData node没有找到");
+    if (Objects.isNull(sheetDataNode)) {
+      throw new DocumentException("sheetData node没有找到");
     }
     composeSqlStatement(sheetDataNode, fileName);
   }
 
   /**
    * 获取excel一行记录来初始化ExcelRow
+   *
    * @param rowNode
    * @param fileName
    * @return
@@ -77,7 +79,7 @@ public class ExcelXmlParser {
         continue;
       }
       String value = data.toString();
-      
+
       boolean isHeaderOrStringType = "s".equalsIgnoreCase(cell.getType()) || "h".equalsIgnoreCase(cell.getType());
       if (isHeaderOrStringType) {
         val index = Integer.parseInt(value);
@@ -208,5 +210,8 @@ public class ExcelXmlParser {
 
   @Autowired
   private BlockingQueue<String> importSqlQueue;
+
+  @Value("${oracle.threshold}")
+  private int threshold;
 
 }
