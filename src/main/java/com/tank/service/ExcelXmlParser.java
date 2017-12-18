@@ -22,10 +22,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @author fuchun
+ */
 @Service
 public class ExcelXmlParser {
 
-
+  /**
+   * 获取excel一行记录来初始化ExcelRow
+   * @param rowNode
+   * @param row
+   * @param fileName
+   * @throws FileNotFoundException
+   * @throws DocumentException
+   */
   private void initExcelRow(Element rowNode, ExcelRow row, String fileName) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
     ExcelCell cell = null;
@@ -46,14 +56,17 @@ public class ExcelXmlParser {
 
       Element children = (Element) node.elementIterator().next();
       String value = children.getData().toString();
+      //这个地方要改
       if ("s".equalsIgnoreCase(cell.getType())) {
-        //TODO [去content_types].xml
         val index = Integer.parseInt(value);
         String result = fetchStrContent(fileName, index);
-        result = "empty".equalsIgnoreCase(result) ? null : result;
-        cell.setValue("'" + result + "'");
+        result = "null".equalsIgnoreCase(result) ? null : result;
+        if (Objects.isNull(result)) {
+          cell.setValue(null);
+        } else {
+          cell.setValue(result);
+        }
       } else {
-
         cell.setValue(value.toString());
       }
 
@@ -76,7 +89,7 @@ public class ExcelXmlParser {
       Element t = (Element) si.elementIterator().next();
       if (counter == index) {
         val data = t.getData();
-        rs = Objects.isNull(data) ? "empty" : data.toString();
+        rs = Objects.isNull(data) ? "null" : data.toString();
         isContinue = false;
         continue;
       }
@@ -85,6 +98,14 @@ public class ExcelXmlParser {
     return rs;
   }
 
+  /**
+   * 获取到row标记以后 对row标记下的节点进行处理
+   *
+   * @param element
+   * @param fileName
+   * @throws FileNotFoundException
+   * @throws DocumentException
+   */
   public void fetchRows(final Element element, String fileName) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = element.elementIterator();
     List<ExcelRow> excelRows = new LinkedList<>();
@@ -99,12 +120,19 @@ public class ExcelXmlParser {
       excelRows.add(row);
     }
 
-    for(ExcelRow row: excelRows) {
+    for (ExcelRow row : excelRows) {
       System.out.println(row.toString());
     }
 
   }
 
+  /**
+   * 获取到sheetData节点以后立马终止解析
+   *
+   * @param fileName
+   * @throws DocumentException
+   * @throws FileNotFoundException
+   */
   public void fetchSheetDataNode(@NonNull String fileName) throws DocumentException, FileNotFoundException {
     SAXReader reader = new SAXReader();
     String sheetPath = this.absoluteSheetPath(fileName);

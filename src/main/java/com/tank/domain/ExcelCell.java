@@ -2,6 +2,15 @@ package com.tank.domain;
 
 
 import lombok.Data;
+import lombok.NonNull;
+import lombok.val;
+
+import javax.swing.text.DateFormatter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Data
 public class ExcelCell {
@@ -11,8 +20,43 @@ public class ExcelCell {
 
   private String type = "";
 
+  private String STRING_TYPE = "s";
+
+  private String NUMBER_TYPE = "n";
+
+
+  /**
+   * 是否是不带小时分秒的日期类型
+   *
+   * @param dateStr
+   * @return
+   */
+  private boolean isDateWithOutHours(@NonNull String dateStr) {
+    val pattern = "\\d{4}-\\d{2}-\\d{2}";
+    return dateStr.matches(pattern);
+  }
+
+  private boolean isDateWithHours(@NonNull String dateStr) {
+    val formatter = "yyyy-MM-dd HH:mm:ss";
+    SimpleDateFormat sdf = new SimpleDateFormat(formatter);
+    try {
+      sdf.parse(dateStr);
+      return true;
+    } catch (ParseException e) {
+      return false;
+    }
+  }
+
   @Override
   public String toString() {
-    return this.value;
+    val rs = "'" + this.value + "'";
+    if (NUMBER_TYPE.equalsIgnoreCase(type)) {
+      return this.value;
+    }
+    boolean isDate = isDateWithOutHours(this.value) || isDateWithHours(this.value);
+    if (isDate) {
+      return "to_date(" + rs + ", 'yyyy-MM-dd hh24:mi:ss')";
+    }
+    return rs;
   }
 }

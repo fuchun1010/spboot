@@ -2,7 +2,6 @@ package com.tank.controller;
 
 import com.tank.service.ExcelXmlParser;
 import lombok.val;
-import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.tank.common.toolkit.DirectoryToolKit.downloadDir;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 /**
@@ -51,9 +49,9 @@ public class ImportedController {
   @PostMapping(path = "/import-data")
   public ResponseEntity<Map<String, String>> importDataFromExcel() {
     val response = new HashMap<String, String>();
-    String xlsxPath = downloadDir() + "/Workbook1.xlsx";
+    String xlsxPath = "Workbook1.xlsx";
     try {
-       excelXmlParser.fetchSheetDataNode("Workbook1.xlsx");
+      excelXmlParser.fetchSheetDataNode(xlsxPath);
       response.putIfAbsent("status", "ok");
     } catch (Exception e) {
       e.printStackTrace();

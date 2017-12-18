@@ -12,6 +12,8 @@ import java.util.List;
  */
 public class ExcelRow {
 
+  public boolean isHeader = false;
+
   private List<ExcelCell> cells = new LinkedList<>();
 
   public void addCell(@NonNull ExcelCell excelCell) {
@@ -24,6 +26,9 @@ public class ExcelRow {
     for (ExcelCell cell : cells) {
       strs.add(cell.toString());
     }
-    return String.join(",", strs);
+    StringBuffer sb = new StringBuffer("select ");
+    sb.append(String.join(",", strs));
+    sb.append(" from dual union");
+    return sb.toString();
   }
 }
