@@ -10,6 +10,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -18,6 +19,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.BlockingQueue;
 
 import static java.io.File.separator;
 
@@ -126,13 +128,17 @@ public class ExcelXmlParser {
         initExcelRow(item, row, fileName);
       }
       excelRows.add(row);
+      //TODO 这个地方需要判断批量一次性写入的数据是否达到阀值
     }
     //给最后一行打标记,需要拼接的
     ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
     lastRow.isLast = true;
+    StringBuffer insertSql = new StringBuffer();
     for (ExcelRow row : excelRows) {
-      System.out.println(row.toString());
+      insertSql.append(row.toString());
     }
+    this.importSqlQueue.add(insertSql.toString());
+    excelRows.clear();
 
   }
 
@@ -192,5 +198,8 @@ public class ExcelXmlParser {
     }
     return realPath;
   }
+
+  @Autowired
+  private BlockingQueue<String> importSqlQueue;
 
 }

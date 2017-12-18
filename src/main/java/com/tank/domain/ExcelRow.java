@@ -15,6 +15,7 @@ public class ExcelRow {
   public boolean isHeader = false;
   public boolean isLast = false;
 
+  private String delimiter = ",";
   private List<ExcelCell> cells = new LinkedList<>();
 
   public void addCell(@NonNull ExcelCell excelCell) {
@@ -30,11 +31,11 @@ public class ExcelRow {
 
   private StringBuffer selectSql(@NonNull List<ExcelCell> cells) {
     StringBuffer sb = new StringBuffer("select ");
-    List<String> strs = new LinkedList<>();
+    List<String> cellValues = new LinkedList<>();
     for (ExcelCell cell : cells) {
-      strs.add(cell.toString());
+      cellValues.add(cell.toString());
     }
-    sb.append(String.join(",", strs));
+    sb.append(String.join(delimiter, cellValues));
     if (isLast) {
       sb.append(" from dual ");
     } else {
@@ -45,12 +46,12 @@ public class ExcelRow {
 
   private StringBuffer headerSql(@NonNull List<ExcelCell> cells) {
     StringBuffer sb = new StringBuffer("insert into tab_test( ");
-    List<String> strs = new LinkedList<>();
+    List<String> cellValues = new LinkedList<>();
     for (ExcelCell cell : cells) {
-      strs.add(cell.toString());
+      cellValues.add(cell.toString());
     }
-    sb.append(String.join(",", strs));
-    sb.append(")");
+    sb.append(String.join(delimiter, cellValues));
+    sb.append(") ");
     return sb;
   }
 }
