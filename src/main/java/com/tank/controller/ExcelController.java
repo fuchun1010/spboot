@@ -1,15 +1,18 @@
 package com.tank.controller;
 
+import com.tank.domain.FieldsInfo;
 import lombok.NonNull;
 import lombok.val;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -44,23 +47,22 @@ public class ExcelController {
 
   //curl -i -X POST -H "Content-Type: multipart/form-data" -F "file=@test.mp3" http://mysuperserver/media/1234/upload/
   @PostMapping(path = "/upload/{type}")
-  public ResponseEntity<List<List<String>>> uploadFile(@RequestParam MultipartFile file
-      , @PathVariable("type") String type) {
-    Map<String, String> map = new HashMap<>();
+  public @ResponseBody FieldsInfo uploadFile(@RequestParam MultipartFile file
+      , @PathVariable("type") String type, @RequestParam String tableName, @RequestParam String desc, HttpServletResponse response ) {
     String path = uploadExcelAndGetPath(file);
     if (path == null) {
-      map.putIfAbsent("errors", "upload failed.");
-      return new ResponseEntity<>(INTERNAL_SERVER_ERROR);
+      throw new IllegalArgumentException("uploadExcelAndGetPath did not get filePath");
     }
     if ("schema".equalsIgnoreCase(type)) {
       List fieldsInfo = getSchemaData(path);
       if (!Objects.isNull(fieldsInfo)) {
-        return new ResponseEntity<>(fieldsInfo, OK);
+        return new FieldsInfo(tableName, type, fieldsInfo);
       }
     } else if ("data".equalsIgnoreCase(type)) {
-
+      response.setStatus(200);
+      return null;
     }
-    return new ResponseEntity<>(INTERNAL_SERVER_ERROR);
+    throw new IllegalArgumentException("url type is not 'schema' or 'data' ");
   }
 
 
