@@ -30,6 +30,7 @@ public class ExcelXmlParser {
 
   /**
    * 获取excel一行记录来初始化ExcelRow
+   *
    * @param rowNode
    * @param row
    * @param fileName
@@ -38,16 +39,18 @@ public class ExcelXmlParser {
    */
   private void initExcelRow(Element rowNode, ExcelRow row, String fileName) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
-    ExcelCell cell = null;
     while (it.hasNext()) {
       Element node = it.next();
       Iterator<Attribute> attributes = node.attributeIterator();
-      cell = new ExcelCell();
+      ExcelCell cell = new ExcelCell();
       while (attributes.hasNext()) {
         Attribute attribute = attributes.next();
+        boolean isHeader = row.isHeader;
         boolean isExistedType = "t".equalsIgnoreCase(attribute.getName());
         boolean isStrType = "s".equalsIgnoreCase(attribute.getValue());
-        if (isExistedType && isStrType) {
+        if (isHeader) {
+          cell.setType("h");
+        } else if (isExistedType && isStrType) {
           cell.setType("s");
         } else {
           cell.setType("n");
@@ -55,9 +58,14 @@ public class ExcelXmlParser {
       }
 
       Element children = (Element) node.elementIterator().next();
-      String value = children.getData().toString();
+      Object data = children.getData();
+      if (Objects.isNull(data)) {
+        continue;
+      }
+      String value = data.toString();
       //这个地方要改
-      if ("s".equalsIgnoreCase(cell.getType())) {
+      boolean isHeaderOrStringType = "s".equalsIgnoreCase(cell.getType()) || "h".equalsIgnoreCase(cell.getType());
+      if (isHeaderOrStringType) {
         val index = Integer.parseInt(value);
         String result = fetchStrContent(fileName, index);
         result = "null".equalsIgnoreCase(result) ? null : result;
@@ -67,7 +75,7 @@ public class ExcelXmlParser {
           cell.setValue(result);
         }
       } else {
-        cell.setValue(value.toString());
+        cell.setValue(value);
       }
 
       row.addCell(cell);
@@ -115,6 +123,7 @@ public class ExcelXmlParser {
       ExcelRow row = null;
       if (isRowNode) {
         row = new ExcelRow();
+        row.isHeader = excelRows.size() == 0;
         initExcelRow(item, row, fileName);
       }
       excelRows.add(row);

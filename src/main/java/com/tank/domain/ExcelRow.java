@@ -1,7 +1,6 @@
 package com.tank.domain;
 
 import lombok.NonNull;
-
 import java.util.LinkedList;
 import java.util.List;
 

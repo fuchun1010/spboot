@@ -24,6 +24,8 @@ public class ExcelCell {
 
   private String NUMBER_TYPE = "n";
 
+  private String HEADER_TYPE = "h";
+
 
   /**
    * 是否是不带小时分秒的日期类型
@@ -50,7 +52,8 @@ public class ExcelCell {
   @Override
   public String toString() {
     val rs = "'" + this.value + "'";
-    if (NUMBER_TYPE.equalsIgnoreCase(type)) {
+    val isNumberTypeOrHeader = NUMBER_TYPE.equalsIgnoreCase(type) || HEADER_TYPE.equalsIgnoreCase(type);
+    if (isNumberTypeOrHeader) {
       return this.value;
     }
     boolean isDate = isDateWithOutHours(this.value) || isDateWithHours(this.value);
