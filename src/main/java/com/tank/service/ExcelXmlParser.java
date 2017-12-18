@@ -30,26 +30,39 @@ import static java.io.File.separator;
 public class ExcelXmlParser {
 
   /**
-   * 获取excel一行记录来初始化ExcelRow
+   * 将excel的数据导入oracle数据库
    *
-   * @param rowNode
-   * @param row
    * @param fileName
+   */
+  public void importExcelToOracle(@NonNull final String fileName) throws FileNotFoundException, DocumentException {
+    Element sheetDataNode = fetchSheetDataNode(fileName);
+    if(Objects.isNull(sheetDataNode)) {
+      throw  new DocumentException("sheetData node没有找到");
+    }
+    composeSqlStatement(sheetDataNode, fileName);
+  }
+
+  /**
+   * 获取excel一行记录来初始化ExcelRow
+   * @param rowNode
+   * @param fileName
+   * @return
    * @throws FileNotFoundException
    * @throws DocumentException
    */
-  private void initExcelRow(Element rowNode, ExcelRow row, String fileName) throws FileNotFoundException, DocumentException {
+  private ExcelRow initExcelRow(Element rowNode, String fileName, boolean isTitleRow) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
+    ExcelRow row = new ExcelRow();
     while (it.hasNext()) {
       Element node = it.next();
       Iterator<Attribute> attributes = node.attributeIterator();
       ExcelCell cell = new ExcelCell();
       while (attributes.hasNext()) {
         Attribute attribute = attributes.next();
-        boolean isHeader = row.isHeader;
+        row.isHeader = isTitleRow;
         boolean isExistedType = "t".equalsIgnoreCase(attribute.getName());
         boolean isStrType = "s".equalsIgnoreCase(attribute.getValue());
-        if (isHeader) {
+        if (isTitleRow) {
           cell.setType("h");
         } else if (isExistedType && isStrType) {
           cell.setType("s");
@@ -64,11 +77,11 @@ public class ExcelXmlParser {
         continue;
       }
       String value = data.toString();
-      //这个地方要改
+      
       boolean isHeaderOrStringType = "s".equalsIgnoreCase(cell.getType()) || "h".equalsIgnoreCase(cell.getType());
       if (isHeaderOrStringType) {
         val index = Integer.parseInt(value);
-        String result = fetchStrContent(fileName, index);
+        String result = fetchCellValue(fileName, index);
         result = Objects.isNull(result) ? null : result;
         if (Objects.isNull(result)) {
           cell.setValue(null);
@@ -81,10 +94,11 @@ public class ExcelXmlParser {
 
       row.addCell(cell);
     }
+    return row;
   }
 
 
-  private String fetchStrContent(String fileName, int index) throws FileNotFoundException, DocumentException {
+  private String fetchCellValue(final String fileName, final int index) throws FileNotFoundException, DocumentException {
     val path = this.absoluteContentTypePath(fileName);
     if (!new File(path).exists()) {
       throw new FileNotFoundException(fileName + " not exists");
@@ -110,33 +124,34 @@ public class ExcelXmlParser {
   /**
    * 获取到row标记以后 对row标记下的节点进行处理
    *
-   * @param element
+   * @param sheetData
    * @param fileName
    * @throws FileNotFoundException
    * @throws DocumentException
    */
-  public void fetchRows(final Element element, String fileName) throws FileNotFoundException, DocumentException {
-    Iterator<Element> it = element.elementIterator();
+  private void composeSqlStatement(final Element sheetData, final String fileName) throws FileNotFoundException, DocumentException {
+    Iterator<Element> it = sheetData.elementIterator();
     List<ExcelRow> excelRows = new LinkedList<>();
     while (it.hasNext()) {
       Element item = it.next();
       boolean isRowNode = "row".equalsIgnoreCase(item.getName());
-      ExcelRow row = null;
-      if (isRowNode) {
-        row = new ExcelRow();
-        row.isHeader = excelRows.size() == 0;
-        initExcelRow(item, row, fileName);
+      if (!isRowNode) {
+        continue;
       }
+      val isHeader = excelRows.size() == 0;
+      ExcelRow row = initExcelRow(item, fileName, isHeader);
+
       excelRows.add(row);
       //TODO 这个地方需要判断批量一次性写入的数据是否达到阀值
     }
-    //给最后一行打标记,需要拼接的
+    //给最后一行打标记,最后一行和其他行需要拼接的内容是不一致的
     ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
     lastRow.isLast = true;
     StringBuffer insertSql = new StringBuffer();
     for (ExcelRow row : excelRows) {
       insertSql.append(row.toString());
     }
+    //System.out.println(insertSql.toString());
     this.importSqlQueue.add(insertSql.toString());
     excelRows.clear();
 
@@ -149,29 +164,21 @@ public class ExcelXmlParser {
    * @throws DocumentException
    * @throws FileNotFoundException
    */
-  public void fetchSheetDataNode(@NonNull String fileName) throws DocumentException, FileNotFoundException {
+  private Element fetchSheetDataNode(@NonNull String fileName) throws DocumentException, FileNotFoundException {
     SAXReader reader = new SAXReader();
     String sheetPath = this.absoluteSheetPath(fileName);
     Document document = reader.read(new File(sheetPath));
     Element root = document.getRootElement();
     Iterator<Element> it = root.elementIterator();
-    Element sheetData = null;
-    boolean isContinue = true;
 
-    while (it.hasNext() && isContinue) {
+    while (it.hasNext()) {
       Element item = it.next();
-      boolean isRowProperty = "sheetData".equalsIgnoreCase(item.getName());
-      if (!isRowProperty) {
-        continue;
+      boolean isSheetDataNode = "sheetData".equalsIgnoreCase(item.getName());
+      if (isSheetDataNode) {
+        return item;
       }
-      isContinue = false;
-      sheetData = item;
     }
-
-    if (!Objects.isNull(sheetData)) {
-      fetchRows(sheetData, fileName);
-    }
-
+    return null;
   }
 
 

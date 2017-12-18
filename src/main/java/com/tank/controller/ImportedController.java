@@ -49,9 +49,9 @@ public class ImportedController {
   @PostMapping(path = "/import-data")
   public ResponseEntity<Map<String, String>> importDataFromExcel() {
     val response = new HashMap<String, String>();
-    String xlsxPath = "Workbook1.xlsx";
+    String fileName = "Workbook1.xlsx";
     try {
-      excelXmlParser.fetchSheetDataNode(xlsxPath);
+      excelXmlParser.importExcelToOracle(fileName);
       response.putIfAbsent("status", "ok");
     } catch (Exception e) {
       e.printStackTrace();
