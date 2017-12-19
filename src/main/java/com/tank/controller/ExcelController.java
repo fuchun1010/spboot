@@ -47,11 +47,19 @@ public class ExcelController {
 
   //curl -i -X POST -H "Content-Type: multipart/form-data" -F "file=@test.mp3" http://mysuperserver/media/1234/upload/
   @PostMapping(path = "/upload/{type}")
-  public @ResponseBody FieldsInfo uploadFile(@RequestParam MultipartFile file
-      , @PathVariable("type") String type, @RequestParam String tableName, @RequestParam String desc, HttpServletResponse response ) {
+  public @ResponseBody FieldsInfo uploadFile(@RequestParam MultipartFile file,
+          @PathVariable("type") String type, @RequestParam String tableName, @RequestParam String desc,
+          @RequestParam String schemaName,
+          HttpServletResponse response ) {
     String path = uploadExcelAndGetPath(file);
     if (path == null) {
       throw new IllegalArgumentException("uploadExcelAndGetPath did not get filePath");
+    }
+    if ("".equalsIgnoreCase(schemaName)) {
+      throw new IllegalArgumentException("schemaName is empty");
+    }
+    if ("".equalsIgnoreCase(tableName)) {
+      throw new IllegalArgumentException("tableName is empty");
     }
     if ("schema".equalsIgnoreCase(type)) {
       List fieldsInfo = getSchemaData(path);
