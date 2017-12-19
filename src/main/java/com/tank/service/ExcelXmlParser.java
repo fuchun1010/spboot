@@ -136,6 +136,22 @@ public class ExcelXmlParser {
     return initExcelRow(item, fileName, true);
   }
 
+  private void sendExcelRowsToQueue(List<ExcelRow> excelRows) {
+    val isNotEmpty = !Objects.isNull(excelRows) && excelRows.size() > 0;
+    if (isNotEmpty) {
+      //给最后一行打标记,最后一行和其他行需要拼接的内容是不一致的
+      ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
+      lastRow.isLast = true;
+      StringBuffer insertSql = new StringBuffer();
+      for (ExcelRow tmpRow : excelRows) {
+        insertSql.append(tmpRow.toString());
+      }
+      System.out.println(insertSql.toString());
+      this.importSqlQueue.add(insertSql.toString());
+      excelRows.clear();
+    }
+  }
+
   /**
    * 获取到row标记以后 对row标记下的节点进行处理
    *
@@ -158,33 +174,11 @@ public class ExcelXmlParser {
       excelRows.add(row);
       val isFull = excelRows.size() == this.threshold + 1;
       if (isFull) {
-        //给最后一行打标记,最后一行和其他行需要拼接的内容是不一致的
-        ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
-        lastRow.isLast = true;
-        StringBuffer insertSql = new StringBuffer();
-        for (ExcelRow tmpRow : excelRows) {
-          insertSql.append(tmpRow.toString());
-        }
-        System.out.println(insertSql.toString());
-        this.importSqlQueue.add(insertSql.toString());
-        excelRows.clear();
+        sendExcelRowsToQueue(excelRows);
       }
-
-      //TODO 这个地方需要判断批量一次性写入的数据是否达到阀值
     }
-    //给最后一行打标记,最后一行和其他行需要拼接的内容是不一致的
-    val isNotEmpty = excelRows.size() > 0;
-    if(isNotEmpty) {
-      ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
-      lastRow.isLast = true;
-      StringBuffer insertSql = new StringBuffer();
-      for (ExcelRow row : excelRows) {
-        insertSql.append(row.toString());
-      }
-      System.out.println(insertSql.toString());
-      this.importSqlQueue.add(insertSql.toString());
-      excelRows.clear();
-    }
+    //可能还有剩余的数据没有处理
+    sendExcelRowsToQueue(excelRows);
 
   }
 
