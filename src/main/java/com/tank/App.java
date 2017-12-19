@@ -1,13 +1,14 @@
 package com.tank;
 
-import lombok.val;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * @author fuchun
@@ -20,12 +21,12 @@ public class App {
     ApplicationContext context = SpringApplication.run(App.class);
 
     BlockingQueue<String> queue = (BlockingQueue<String>) context.getBean("importSqlQueue");
-    JdbcTemplate oracleJdbcTemplate = (JdbcTemplate) context.getBean("oracleJdbcTemplate");
+    JdbcTemplate jdbcTemplate = (JdbcTemplate) context.getBean("oracleJdbcTemplate");
     Executors.newCachedThreadPool().execute(() -> {
       while (true) {
         try {
           String insertSql = queue.take();
-          oracleJdbcTemplate.execute(insertSql);
+          jdbcTemplate.execute(insertSql);
           System.out.println("inserted ok");
         } catch (InterruptedException e) {
           e.printStackTrace();
@@ -37,7 +38,7 @@ public class App {
 
   @Bean(name = "importSqlQueue")
   public BlockingQueue<String> importSqlQueue() {
-    return new ArrayBlockingQueue<String>(20);
+    return new LinkedBlockingDeque<>();
   }
 
 
