@@ -1,6 +1,7 @@
 package com.tank.service;
 
 import com.tank.common.toolkit.DirectoryToolKit;
+import com.tank.common.toolkit.ExcelToolkit;
 import com.tank.domain.ExcelCell;
 import com.tank.domain.ExcelRow;
 import lombok.NonNull;
@@ -44,6 +45,23 @@ public class ExcelXmlParser {
   }
 
   /**
+   * 产生空的单元格
+   *
+   * @param differ
+   * @return
+   */
+  private List<ExcelCell> generateNullCells(final int differ) {
+    List<ExcelCell> cells = new LinkedList<>();
+    for (int i = 0; i < differ; i++) {
+      ExcelCell cell = new ExcelCell();
+      cell.setType("n");
+      cell.setValue(null);
+      cells.add(cell);
+    }
+    return cells;
+  }
+
+  /**
    * 获取excel一行记录来初始化ExcelRow
    *
    * @param rowNode
@@ -55,6 +73,7 @@ public class ExcelXmlParser {
   private ExcelRow initExcelRow(Element rowNode, String fileName, boolean isTitleRow) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
     ExcelRow row = new ExcelRow();
+    int prePosition = 1;
     while (it.hasNext()) {
       Element node = it.next();
       Iterator<Attribute> attributes = node.attributeIterator();
@@ -62,8 +81,25 @@ public class ExcelXmlParser {
       while (attributes.hasNext()) {
         Attribute attribute = attributes.next();
         row.isHeader = isTitleRow;
-        boolean isExistedType = "t".equalsIgnoreCase(attribute.getName());
+        val attributeName = attribute.getName();
+        boolean isExistedType = "t".equalsIgnoreCase(attributeName);
         boolean isStrType = "s".equalsIgnoreCase(attribute.getValue());
+        boolean isPosition = "r".equalsIgnoreCase(attributeName);
+        if (isPosition) {
+          String cellColumn = attribute.getValue();
+          if (cellColumn.equalsIgnoreCase("B4")) {
+            System.out.println("B4");
+          }
+          val cellPosition = ExcelToolkit.excelCellPosition(cellColumn);
+          val cellsDiffer = cellPosition - row.cellsNumber() - 1;
+          if (cellsDiffer >= 1) {
+            val excelCells = generateNullCells(cellsDiffer);
+            for (ExcelCell tmpCell : excelCells) {
+              row.addCell(tmpCell);
+            }
+          }
+          prePosition = cellPosition;
+        }
         if (isTitleRow) {
           cell.setType("h");
         } else if (isExistedType && isStrType) {
@@ -136,6 +172,11 @@ public class ExcelXmlParser {
     return initExcelRow(item, fileName, true);
   }
 
+  /**
+   * 将sql发送到队列接收写入操作
+   *
+   * @param excelRows
+   */
   private void sendExcelRowsToQueue(List<ExcelRow> excelRows) {
     val isNotEmpty = !Objects.isNull(excelRows) && excelRows.size() > 0;
     if (isNotEmpty) {
@@ -148,7 +189,9 @@ public class ExcelXmlParser {
       }
       System.out.println(insertSql.toString());
       this.importSqlQueue.add(insertSql.toString());
+      ExcelRow header = excelRows.get(0);
       excelRows.clear();
+      excelRows.add(header);
     }
   }
 
@@ -163,14 +206,22 @@ public class ExcelXmlParser {
   private void composeSqlStatement(final Element sheetData, final String fileName) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = sheetData.elementIterator();
     List<ExcelRow> excelRows = new LinkedList<>();
+
+    ExcelRow headerRow = getHeaderRow(sheetData, fileName);
+    int totalColumn = headerRow.cellsNumber();
     while (it.hasNext()) {
       Element item = it.next();
-      boolean isRowNode = "row".equalsIgnoreCase(item.getName());
-      if (!isRowNode) {
-        continue;
-      }
       val isHeader = excelRows.size() == 0;
       ExcelRow row = isHeader ? getHeaderRow(sheetData, fileName) : initExcelRow(item, fileName, isHeader);
+      int cellsDiffer = totalColumn - row.cellsNumber();
+      //补缺乏的单元格(后面缺乏)
+      if (cellsDiffer > 0) {
+        List<ExcelCell> tmpCells = generateNullCells(cellsDiffer);
+        for (ExcelCell tmp : tmpCells) {
+          row.addCell(tmp);
+        }
+      }
+
       excelRows.add(row);
       val isFull = excelRows.size() == this.threshold + 1;
       if (isFull) {

@@ -22,6 +22,10 @@ public class ExcelRow {
     cells.add(excelCell);
   }
 
+  public int cellsNumber() {
+    return cells.size() ;
+  }
+
   @Override
   public String toString() {
 
