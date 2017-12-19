@@ -56,6 +56,7 @@ public class ExcelToolkit {
     val tmpCellNo = extractCharacter(cellNo.toUpperCase());
     val queue = toQueue(tmpCellNo);
     val result = calculatePosition(queue, mapped);
+    mapped.clear();
     return result;
   }
 
@@ -116,6 +117,7 @@ public class ExcelToolkit {
    * 计算单元格位置
    * 输入AA 返回27
    * 输入AAW 返回725
+   *
    * @param queue
    * @param map
    * @return

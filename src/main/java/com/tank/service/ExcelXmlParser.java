@@ -124,6 +124,19 @@ public class ExcelXmlParser {
   }
 
   /**
+   * 获取excel的猎头
+   *
+   * @param sheetData
+   * @param fileName
+   * @return
+   */
+  private ExcelRow getHeaderRow(final Element sheetData, final String fileName) throws FileNotFoundException, DocumentException {
+    Iterator<Element> it = sheetData.elementIterator();
+    Element item = it.next();
+    return initExcelRow(item, fileName, true);
+  }
+
+  /**
    * 获取到row标记以后 对row标记下的节点进行处理
    *
    * @param sheetData
@@ -141,21 +154,37 @@ public class ExcelXmlParser {
         continue;
       }
       val isHeader = excelRows.size() == 0;
-      ExcelRow row = initExcelRow(item, fileName, isHeader);
-
+      ExcelRow row = isHeader ? getHeaderRow(sheetData, fileName) : initExcelRow(item, fileName, isHeader);
       excelRows.add(row);
+      val isFull = excelRows.size() == this.threshold + 1;
+      if (isFull) {
+        //给最后一行打标记,最后一行和其他行需要拼接的内容是不一致的
+        ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
+        lastRow.isLast = true;
+        StringBuffer insertSql = new StringBuffer();
+        for (ExcelRow tmpRow : excelRows) {
+          insertSql.append(tmpRow.toString());
+        }
+        System.out.println(insertSql.toString());
+        this.importSqlQueue.add(insertSql.toString());
+        excelRows.clear();
+      }
+
       //TODO 这个地方需要判断批量一次性写入的数据是否达到阀值
     }
     //给最后一行打标记,最后一行和其他行需要拼接的内容是不一致的
-    ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
-    lastRow.isLast = true;
-    StringBuffer insertSql = new StringBuffer();
-    for (ExcelRow row : excelRows) {
-      insertSql.append(row.toString());
+    val isNotEmpty = excelRows.size() > 0;
+    if(isNotEmpty) {
+      ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
+      lastRow.isLast = true;
+      StringBuffer insertSql = new StringBuffer();
+      for (ExcelRow row : excelRows) {
+        insertSql.append(row.toString());
+      }
+      System.out.println(insertSql.toString());
+      this.importSqlQueue.add(insertSql.toString());
+      excelRows.clear();
     }
-    //System.out.println(insertSql.toString());
-    this.importSqlQueue.add(insertSql.toString());
-    excelRows.clear();
 
   }
 
