@@ -24,7 +24,54 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class ExcelToolkit {
 
   /**
+   * c1 date,
+   * c2 varchar2(50),
+   * c3 varchar2(50),
+   * c4 varchar2(50),
+   * c5 varchar2(50),
+   * c6 varchar2(50),
+   * c7 varchar2(50),
+   * c8 NUMERIC(20,2),
+   * c9 VARCHAR2(50),
+   * c10 NUMERIC(20,2),
+   * c11 VARCHAR2(50),
+   * c12 NUMERIC(10,2),
+   * c13 NUMERIC(10,2),
+   * c14 NUMERIC(10,2),
+   * c15 NUMERIC(10,2),
+   * c16 NUMERIC(10,2),
+   * c17 NUMERIC(10,2),
+   * c18 NUMERIC(10,2)
+   *
+   * @return
+   */
+
+  public static Map<Integer, String> schema() {
+    Map<Integer, String> types = new HashMap<>();
+    types.putIfAbsent(1, "d");
+    types.putIfAbsent(2, "n");
+    int start = 3;
+    int end = 5;
+    for (int i = start; i <= end; i++) {
+      types.putIfAbsent(i, "s");
+    }
+    types.putIfAbsent(6, "n");
+    types.putIfAbsent(7, "s");
+    types.putIfAbsent(8, "n");
+    types.putIfAbsent(9, "s");
+    types.putIfAbsent(10, "n");
+    types.putIfAbsent(11, "s");
+    start = 12;
+    end = 18;
+    for (int i = start; i <= end; i++) {
+      types.putIfAbsent(i, "n");
+    }
+    return types;
+  }
+
+  /**
    * 产生zip文件
+   *
    * @param file
    * @return
    * @throws IOException
@@ -42,6 +89,7 @@ public class ExcelToolkit {
 
   /**
    * 解压excel文件
+   *
    * @param filePath
    * @return
    * @throws ZipException
@@ -76,6 +124,7 @@ public class ExcelToolkit {
 
   /**
    * 将excel中日期字段的数据转成日期字符串(yyyy-MM-dd HH:mm:ss)
+   *
    * @param dateTime
    * @return
    */

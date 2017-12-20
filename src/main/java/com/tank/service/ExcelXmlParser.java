@@ -16,13 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.stream.Stream;
 
 import static java.io.File.separator;
 
@@ -37,12 +34,12 @@ public class ExcelXmlParser {
    *
    * @param fileName
    */
-  public void importExcelToOracle(@NonNull final String fileName) throws FileNotFoundException, DocumentException {
+  public void importExcelToOracle(@NonNull final String fileName, Map<Integer, String> schema) throws FileNotFoundException, DocumentException {
     Element sheetDataNode = fetchSheetDataNode(fileName);
     if (Objects.isNull(sheetDataNode)) {
       throw new DocumentException("sheetData node没有找到");
     }
-    composeSqlStatement(sheetDataNode, fileName);
+    composeSqlStatement(sheetDataNode, fileName, schema);
   }
 
   /**
@@ -71,42 +68,29 @@ public class ExcelXmlParser {
    * @throws FileNotFoundException
    * @throws DocumentException
    */
-  private ExcelRow initExcelRow(Element rowNode, String fileName, boolean isTitleRow) throws FileNotFoundException, DocumentException {
+  private ExcelRow initExcelRow(Element rowNode, String fileName, Map<Integer, String> schema) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
     ExcelRow row = new ExcelRow();
     while (it.hasNext()) {
       Element node = it.next();
-      Iterator<Attribute> attributes = node.attributeIterator();
+      Attribute attribute = node.attribute("r");
       ExcelCell cell = new ExcelCell();
-      while (attributes.hasNext()) {
-        Attribute attribute = attributes.next();
-        row.isHeader = isTitleRow;
-        val attributeName = attribute.getName();
-        boolean isExistedType = "t".equalsIgnoreCase(attributeName);
-        boolean isStrType = "s".equalsIgnoreCase(attribute.getValue());
-        boolean isPosition = "r".equalsIgnoreCase(attributeName);
-        boolean isDate = "s".equalsIgnoreCase(attributeName);
-        if (isPosition) {
-          String cellColumn = attribute.getValue();
-          val cellPosition = ExcelToolkit.excelCellPosition(cellColumn);
-          val cellsDiffer = cellPosition - row.cellsNumber() - 1;
-          if (cellsDiffer >= 1) {
-            val excelCells = generateNullCells(cellsDiffer);
-            for (ExcelCell tmpCell : excelCells) {
-              row.addCell(tmpCell);
-            }
-          }
+      row.isHeader = false;
+
+      String cellColumn = attribute.getValue();
+      val cellPosition = ExcelToolkit.excelCellPosition(cellColumn);
+      val cellType = schema.get(cellPosition);
+      cell.setType(cellType);
+
+      Iterator<Element> c = node.elementIterator();
+      if (!c.hasNext()) {
+        val excelCells = generateNullCells(1);
+        for (ExcelCell tmpCell : excelCells) {
+          row.addCell(tmpCell);
         }
-        if (isTitleRow) {
-          cell.setType("h");
-        } else if (isExistedType && isStrType) {
-          cell.setType("s");
-        } else if (isDate) {
-          cell.setType("d");
-        } else {
-          cell.setType("n");
-        }
+        continue;
       }
+
 
       Element children = (Element) node.elementIterator().next();
       Object data = children.getData();
@@ -115,22 +99,17 @@ public class ExcelXmlParser {
       }
       String value = data.toString();
 
-      String[] types = {"s", "h"};
-      boolean isHeaderOrStringType = Stream.of(types).filter(t -> t.equalsIgnoreCase(cell.getType())).count() > 0;
+      boolean isString = "s".equalsIgnoreCase(cell.getType());
       boolean isDateType = "d".equalsIgnoreCase(cell.getType());
-      String result = null;
+
       if (isDateType) {
-        result = Objects.isNull(value) ? null : ExcelToolkit.converToDateStr(Integer.parseInt(value));
+        val result = Objects.isNull(value) ? null : ExcelToolkit.converToDateStr(Integer.parseInt(value));
         cell.setValue(result);
-      } else if (isHeaderOrStringType) {
+      } else if (isString) {
         val index = Integer.parseInt(value);
-        result = fetchCellValue(fileName, index);
+        String result = fetchCellValue(fileName, index);
         result = Objects.isNull(result) ? null : result;
-        if (Objects.isNull(result)) {
-          cell.setValue(null);
-        } else {
-          cell.setValue(result);
-        }
+        cell.setValue(result);
       } else {
         cell.setValue(value);
       }
@@ -165,16 +144,22 @@ public class ExcelXmlParser {
   }
 
   /**
-   * 获取excel的猎头
+   * 获取excel的列数
    *
    * @param sheetData
    * @param fileName
    * @return
    */
-  private ExcelRow getHeaderRow(final Element sheetData, final String fileName) throws FileNotFoundException, DocumentException {
+  private int getColumns(final Element sheetData, final String fileName) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = sheetData.elementIterator();
     Element item = it.next();
-    return initExcelRow(item, fileName, true);
+    Iterator<Element> cells = item.elementIterator();
+    int counter = 0;
+    while (cells.hasNext()) {
+      cells.next();
+      ++counter;
+    }
+    return counter;
   }
 
   /**
@@ -183,7 +168,7 @@ public class ExcelXmlParser {
    * @param excelRows
    */
   private void sendExcelRowsToQueue(List<ExcelRow> excelRows) {
-    val isNotEmpty = !Objects.isNull(excelRows) && excelRows.size() > 0;
+    val isNotEmpty = !Objects.isNull(excelRows) && excelRows.size() > 1;
     if (isNotEmpty) {
       //给最后一行打标记,最后一行和其他行需要拼接的内容是不一致的
       ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
@@ -192,8 +177,8 @@ public class ExcelXmlParser {
       for (ExcelRow tmpRow : excelRows) {
         insertSql.append(tmpRow.toString());
       }
-      ///System.out.println(insertSql.toString());
-      this.importSqlQueue.add(insertSql.toString());
+      System.out.println(insertSql.toString());
+      ///this.importSqlQueue.add(insertSql.toString());
       ExcelRow header = excelRows.get(0);
       excelRows.clear();
       excelRows.add(header);
@@ -208,16 +193,17 @@ public class ExcelXmlParser {
    * @throws FileNotFoundException
    * @throws DocumentException
    */
-  private void composeSqlStatement(final Element sheetData, final String fileName) throws FileNotFoundException, DocumentException {
+  private void composeSqlStatement(final Element sheetData, final String fileName, final Map<Integer, String> schema) throws FileNotFoundException, DocumentException {
+
     Iterator<Element> it = sheetData.elementIterator();
     List<ExcelRow> excelRows = new LinkedList<>();
 
-    ExcelRow headerRow = getHeaderRow(sheetData, fileName);
-    int totalColumn = headerRow.cellsNumber();
+    int totalColumn = getColumns(sheetData, fileName);
+
     while (it.hasNext()) {
       Element item = it.next();
-      val isHeader = excelRows.size() == 0;
-      ExcelRow row = isHeader ? getHeaderRow(sheetData, fileName) : initExcelRow(item, fileName, isHeader);
+      val isHeaderRow = excelRows.size() == 0;
+      ExcelRow row = isHeaderRow ? headerRow(item) : initExcelRow(item, fileName, schema);
       int cellsDiffer = totalColumn - row.cellsNumber();
       //补缺乏的单元格(后面缺乏)
       if (cellsDiffer > 0) {
@@ -238,6 +224,18 @@ public class ExcelXmlParser {
 
   }
 
+  private ExcelRow headerRow(Element item) {
+    ExcelRow row = new ExcelRow();
+    row.isHeader = true;
+    Iterator<Element> cells = item.elementIterator();
+    while (cells.hasNext()) {
+      ExcelCell cell = new ExcelCell();
+      row.addCell(cell);
+      cells.next();
+    }
+    return row;
+  }
+
   /**
    * 获取到sheetData节点以后立马终止解析
    *
@@ -247,8 +245,10 @@ public class ExcelXmlParser {
    */
   private Element fetchSheetDataNode(@NonNull String fileName) throws DocumentException, FileNotFoundException {
     SAXReader reader = new SAXReader();
+    
+    long start = System.currentTimeMillis();
     String sheetPath = this.absoluteSheetPath(fileName);
-    Document document = reader.read(new File(sheetPath));
+    Document document = reader.read(new FileInputStream(new File(sheetPath)));
     Element root = document.getRootElement();
     Iterator<Element> it = root.elementIterator();
 
@@ -256,9 +256,12 @@ public class ExcelXmlParser {
       Element item = it.next();
       boolean isSheetDataNode = "sheetData".equalsIgnoreCase(item.getName());
       if (isSheetDataNode) {
+        long end = System.currentTimeMillis();
+        System.out.println("cost ---->" + (end - start));
         return item;
       }
     }
+
     return null;
   }
 

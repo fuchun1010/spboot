@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class ExcelRow {
 
-  public boolean isHeader = false;
+  public boolean isHeader = true;
   public boolean isLast = false;
 
   private String delimiter = ",";
@@ -49,13 +49,7 @@ public class ExcelRow {
   }
 
   private StringBuffer headerSql(@NonNull List<ExcelCell> cells) {
-    StringBuffer sb = new StringBuffer("insert into tab_test( ");
-    List<String> cellValues = new LinkedList<>();
-    for (ExcelCell cell : cells) {
-      cellValues.add(cell.toString());
-    }
-    sb.append(String.join(delimiter, cellValues));
-    sb.append(") ");
+    StringBuffer sb = new StringBuffer("insert into tab_excel ");
     return sb;
   }
 }

@@ -1,5 +1,6 @@
 server:
   port: 8888
+  connection-timeout: 86400000
 
 logging:
   path: logs
@@ -15,4 +16,4 @@ oracle:
   url: jdbc:oracle:thin:@localhost:1521:xe
   username: fullsample
   password: fullsample
-  threshold: 2
+  threshold: 1000

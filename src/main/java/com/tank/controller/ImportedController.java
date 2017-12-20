@@ -1,18 +1,18 @@
 package com.tank.controller;
 
+import com.tank.common.toolkit.ExcelToolkit;
 import com.tank.service.ExcelXmlParser;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -23,35 +23,17 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
  */
 @RestController
 @CrossOrigin
-@RequestMapping(path = "/imported/api")
+@RequestMapping(path = "/imported/api", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ImportedController {
 
-  @PostMapping(path = "/create-schema")
-  public ResponseEntity<Map<String, String>> createTableWithSchema() {
-    val map = new HashMap<String, String>();
-    val createTableSql = "create table tab_user(id int primary key,name varchar2(50) not null)";
-    val sequenceSql = "create sequence seq_tab_users start with 1 INCREMENT BY 1 nomaxvalue cache 10000";
-    val trigger = "CREATE OR REPLACE TRIGGER trigger_tab_user BEFORE INSERT ON tab_users FOR EACH ROW BEGIN SELECT seq_tab_users.nextval INTO :new.id from dual END";
-    try {
-      this.oracleJdbcTemplate.execute(createTableSql);
-      this.oracleJdbcTemplate.execute(sequenceSql);
-      this.oracleJdbcTemplate.execute(trigger);
-      map.putIfAbsent("status", "created table sequence trigger success");
-      return ResponseEntity.ok(map);
-    } catch (DataAccessException e) {
-      map.putIfAbsent("error", e.getMessage());
-      return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(map);
-    }
-
-  }
-
-
   @PostMapping(path = "/import-data")
-  public ResponseEntity<Map<String, String>> importDataFromExcel() {
+  public ResponseEntity<Map<String, String>> importDataFromExcel(@RequestBody Map<String, String> parameters) {
     val response = new HashMap<String, String>();
-    String fileName = "Workbook1.xlsx";
+    val name = parameters.get("name");
+    val map = ExcelToolkit.schema();
+    String fileName = Objects.isNull(name) ? "Workbook2.xlsx" : name;
     try {
-      excelXmlParser.importExcelToOracle(fileName);
+      excelXmlParser.importExcelToOracle(fileName,map);
       response.putIfAbsent("status", "ok");
     } catch (Exception e) {
       e.printStackTrace();
