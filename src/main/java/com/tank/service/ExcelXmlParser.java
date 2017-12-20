@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Stream;
 
 import static java.io.File.separator;
 
@@ -73,7 +74,6 @@ public class ExcelXmlParser {
   private ExcelRow initExcelRow(Element rowNode, String fileName, boolean isTitleRow) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
     ExcelRow row = new ExcelRow();
-    int prePosition = 1;
     while (it.hasNext()) {
       Element node = it.next();
       Iterator<Attribute> attributes = node.attributeIterator();
@@ -85,11 +85,9 @@ public class ExcelXmlParser {
         boolean isExistedType = "t".equalsIgnoreCase(attributeName);
         boolean isStrType = "s".equalsIgnoreCase(attribute.getValue());
         boolean isPosition = "r".equalsIgnoreCase(attributeName);
+        boolean isDate = "s".equalsIgnoreCase(attributeName);
         if (isPosition) {
           String cellColumn = attribute.getValue();
-          if (cellColumn.equalsIgnoreCase("B4")) {
-            System.out.println("B4");
-          }
           val cellPosition = ExcelToolkit.excelCellPosition(cellColumn);
           val cellsDiffer = cellPosition - row.cellsNumber() - 1;
           if (cellsDiffer >= 1) {
@@ -98,12 +96,13 @@ public class ExcelXmlParser {
               row.addCell(tmpCell);
             }
           }
-          prePosition = cellPosition;
         }
         if (isTitleRow) {
           cell.setType("h");
         } else if (isExistedType && isStrType) {
           cell.setType("s");
+        } else if (isDate) {
+          cell.setType("d");
         } else {
           cell.setType("n");
         }
@@ -116,10 +115,16 @@ public class ExcelXmlParser {
       }
       String value = data.toString();
 
-      boolean isHeaderOrStringType = "s".equalsIgnoreCase(cell.getType()) || "h".equalsIgnoreCase(cell.getType());
-      if (isHeaderOrStringType) {
+      String[] types = {"s", "h"};
+      boolean isHeaderOrStringType = Stream.of(types).filter(t -> t.equalsIgnoreCase(cell.getType())).count() > 0;
+      boolean isDateType = "d".equalsIgnoreCase(cell.getType());
+      String result = null;
+      if (isDateType) {
+        result = Objects.isNull(value) ? null : ExcelToolkit.converToDateStr(Integer.parseInt(value));
+        cell.setValue(result);
+      } else if (isHeaderOrStringType) {
         val index = Integer.parseInt(value);
-        String result = fetchCellValue(fileName, index);
+        result = fetchCellValue(fileName, index);
         result = Objects.isNull(result) ? null : result;
         if (Objects.isNull(result)) {
           cell.setValue(null);
@@ -187,7 +192,7 @@ public class ExcelXmlParser {
       for (ExcelRow tmpRow : excelRows) {
         insertSql.append(tmpRow.toString());
       }
-      System.out.println(insertSql.toString());
+      ///System.out.println(insertSql.toString());
       this.importSqlQueue.add(insertSql.toString());
       ExcelRow header = excelRows.get(0);
       excelRows.clear();

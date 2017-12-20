@@ -5,6 +5,7 @@ import lombok.val;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import oracle.sql.CHAR;
+import org.apache.poi.ss.usermodel.DateUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,6 +13,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -20,7 +23,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class ExcelToolkit {
 
-
+  /**
+   * 产生zip文件
+   * @param file
+   * @return
+   * @throws IOException
+   */
   public static String generateZipExcel(final @NonNull File file) throws IOException {
     String path = DirectoryToolKit.downloadDir();
     val zipFile = new File(path + File.separator + file.getName().replace("xlsx", "zip"));
@@ -32,6 +40,12 @@ public class ExcelToolkit {
     return zipFile.getAbsolutePath();
   }
 
+  /**
+   * 解压excel文件
+   * @param filePath
+   * @return
+   * @throws ZipException
+   */
   public static String unZipExcel(final @NonNull String filePath) throws ZipException {
     File zipFile = new File(filePath);
     String dirName = zipFile.getName().replace(".zip", "");
@@ -58,6 +72,19 @@ public class ExcelToolkit {
     val result = calculatePosition(queue, mapped);
     mapped.clear();
     return result;
+  }
+
+  /**
+   * 将excel中日期字段的数据转成日期字符串(yyyy-MM-dd HH:mm:ss)
+   * @param dateTime
+   * @return
+   */
+  public static String converToDateStr(final @NonNull Integer dateTime) {
+    Calendar calendar = DateUtil.getJavaCalendar(dateTime);
+    Date date = calendar.getTime();
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    String dateStr = df.format(date);
+    return dateStr;
   }
 
   /**
