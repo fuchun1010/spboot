@@ -68,7 +68,7 @@ public class ExcelXmlParser {
    * @throws FileNotFoundException
    * @throws DocumentException
    */
-  private ExcelRow initExcelRow(Element rowNode, String fileName, Map<Integer, String> schema) throws FileNotFoundException, DocumentException {
+  private ExcelRow initExcelRow(Element rowNode, String fileName, Map<Integer, String> schema, Map<Integer,String> sharedStrMap) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
     ExcelRow row = new ExcelRow();
     while (it.hasNext()) {
@@ -107,7 +107,7 @@ public class ExcelXmlParser {
         cell.setValue(result);
       } else if (isString) {
         val index = Integer.parseInt(value);
-        String result = fetchCellValue(fileName, index);
+        String result =  sharedStrMap.get(index);
         result = Objects.isNull(result) ? null : result;
         cell.setValue(result);
       } else {
@@ -119,29 +119,6 @@ public class ExcelXmlParser {
     return row;
   }
 
-
-  private String fetchCellValue(final String fileName, final int index) throws FileNotFoundException, DocumentException {
-    val path = this.absoluteContentTypePath(fileName);
-    if (!new File(path).exists()) {
-      throw new FileNotFoundException(fileName + " not exists");
-    }
-    val reader = new SAXReader();
-    val document = reader.read(new File(path));
-    val root = document.getRootElement();
-    int counter = 0;
-    Iterator<Element> children = root.elementIterator();
-    while (children.hasNext()) {
-      Element si = children.next();
-      Element t = (Element) si.elementIterator().next();
-      if (counter == index) {
-        val data = t.getData();
-        val rs = Objects.isNull(data) ? null : data.toString();
-        return rs;
-      }
-      counter++;
-    }
-    return null;
-  }
 
   /**
    * 获取excel的列数
@@ -177,8 +154,7 @@ public class ExcelXmlParser {
       for (ExcelRow tmpRow : excelRows) {
         insertSql.append(tmpRow.toString());
       }
-      System.out.println(insertSql.toString());
-      ///this.importSqlQueue.add(insertSql.toString());
+      this.importSqlQueue.add(insertSql.toString());
       ExcelRow header = excelRows.get(0);
       excelRows.clear();
       excelRows.add(header);
@@ -194,16 +170,16 @@ public class ExcelXmlParser {
    * @throws DocumentException
    */
   private void composeSqlStatement(final Element sheetData, final String fileName, final Map<Integer, String> schema) throws FileNotFoundException, DocumentException {
-
+    val start= System.currentTimeMillis();
     Iterator<Element> it = sheetData.elementIterator();
     List<ExcelRow> excelRows = new LinkedList<>();
 
     int totalColumn = getColumns(sheetData, fileName);
-
+    val shareStrMap = this.sharedStrMapped(fileName);
     while (it.hasNext()) {
       Element item = it.next();
       val isHeaderRow = excelRows.size() == 0;
-      ExcelRow row = isHeaderRow ? headerRow(item) : initExcelRow(item, fileName, schema);
+      ExcelRow row = isHeaderRow ? headerRow(item) : initExcelRow(item, fileName, schema, shareStrMap);
       int cellsDiffer = totalColumn - row.cellsNumber();
       //补缺乏的单元格(后面缺乏)
       if (cellsDiffer > 0) {
@@ -221,7 +197,10 @@ public class ExcelXmlParser {
     }
     //可能还有剩余的数据没有处理
     sendExcelRowsToQueue(excelRows);
-
+    //清空缓存
+    shareStrMap.clear();
+    val end = System.currentTimeMillis();
+    System.out.println("total cost--->" + (end - start));
   }
 
   private ExcelRow headerRow(Element item) {
@@ -245,8 +224,7 @@ public class ExcelXmlParser {
    */
   private Element fetchSheetDataNode(@NonNull String fileName) throws DocumentException, FileNotFoundException {
     SAXReader reader = new SAXReader();
-    
-    long start = System.currentTimeMillis();
+
     String sheetPath = this.absoluteSheetPath(fileName);
     Document document = reader.read(new FileInputStream(new File(sheetPath)));
     Element root = document.getRootElement();
@@ -256,8 +234,6 @@ public class ExcelXmlParser {
       Element item = it.next();
       boolean isSheetDataNode = "sheetData".equalsIgnoreCase(item.getName());
       if (isSheetDataNode) {
-        long end = System.currentTimeMillis();
-        System.out.println("cost ---->" + (end - start));
         return item;
       }
     }
@@ -288,6 +264,35 @@ public class ExcelXmlParser {
       throw new FileNotFoundException(fileName + " Content_Types.xml不正确");
     }
     return realPath;
+  }
+
+  /**
+   * 将sharedStrings.xml的内容缓存起来
+   * @param fileName
+   * @return
+   * @throws FileNotFoundException
+   * @throws DocumentException
+   */
+  private Map<Integer, String> sharedStrMapped(final @NonNull String fileName) throws FileNotFoundException, DocumentException {
+    Map<Integer, String> mapped = new HashMap<>();
+    val path = this.absoluteContentTypePath(fileName);
+    if (!new File(path).exists()) {
+      throw new FileNotFoundException(fileName + " not exists");
+    }
+    val reader = new SAXReader();
+    val document = reader.read(new File(path));
+    val root = document.getRootElement();
+    int index = 0;
+    Iterator<Element> children = root.elementIterator();
+    while (children.hasNext()) {
+      Element si = children.next();
+      Element t = (Element) si.elementIterator().next();
+      val data = t.getData();
+      val rs = Objects.isNull(data) ? null : data.toString();
+      mapped.putIfAbsent(index, rs);
+      index++;
+    }
+    return mapped;
   }
 
   @Autowired

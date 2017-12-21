@@ -47,6 +47,7 @@ public class ExcelToolkit {
    */
 
   public static Map<Integer, String> schema() {
+    //TODO 这个是需要调用node.js的restful接口的
     Map<Integer, String> types = new HashMap<>();
     types.putIfAbsent(1, "d");
     types.putIfAbsent(2, "n");
