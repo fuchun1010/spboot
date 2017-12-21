@@ -35,7 +35,14 @@ public class ExcelXmlParser {
    * @param fileName
    */
   public void importExcelToOracle(@NonNull final String fileName, Map<Integer, String> schema) throws FileNotFoundException, DocumentException {
+    val start = System.currentTimeMillis();
+    System.out.println("***************************");
+    System.out.println("start load sheet.xml");
     Element sheetDataNode = fetchSheetDataNode(fileName);
+    val end = System.currentTimeMillis();
+    System.out.println(" load sheet.xml cost" + (end - start));
+    System.out.println("***************************");
+    System.out.println("");
     if (Objects.isNull(sheetDataNode)) {
       throw new DocumentException("sheetData node没有找到");
     }
@@ -68,9 +75,10 @@ public class ExcelXmlParser {
    * @throws FileNotFoundException
    * @throws DocumentException
    */
-  private ExcelRow initExcelRow(Element rowNode, String fileName, Map<Integer, String> schema, Map<Integer,String> sharedStrMap) throws FileNotFoundException, DocumentException {
+  private ExcelRow initExcelRow(Element rowNode, String fileName, Map<Integer, String> schema, Map<Integer, String> sharedStrMap) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
     ExcelRow row = new ExcelRow();
+
     while (it.hasNext()) {
       Element node = it.next();
       Attribute attribute = node.attribute("r");
@@ -82,13 +90,26 @@ public class ExcelXmlParser {
       val cellType = schema.get(cellPosition);
       cell.setType(cellType);
 
-      Iterator<Element> c = node.elementIterator();
-      if (!c.hasNext()) {
-        val excelCells = generateNullCells(1);
-        for (ExcelCell tmpCell : excelCells) {
-          row.addCell(tmpCell);
+
+      if ("2013".equals(version)) {
+        Iterator<Element> c = node.elementIterator();
+        //excel xlsx各个版本对于空格的补缺格式不一致
+        if (!c.hasNext()) {
+          val excelCells = generateNullCells(1);
+          for (ExcelCell tmpCell : excelCells) {
+            row.addCell(tmpCell);
+          }
+          continue;
         }
-        continue;
+      } else {
+        //excel 2016版本的格式，其他版本我没有测试过
+        int differ = cellPosition - row.cellsNumber() - 1;
+        if (differ >= 1) {
+          val excelCells = generateNullCells(differ);
+          for (ExcelCell tmpCell : excelCells) {
+            row.addCell(tmpCell);
+          }
+        }
       }
 
 
@@ -107,7 +128,7 @@ public class ExcelXmlParser {
         cell.setValue(result);
       } else if (isString) {
         val index = Integer.parseInt(value);
-        String result =  sharedStrMap.get(index);
+        String result = sharedStrMap.get(index);
         result = Objects.isNull(result) ? null : result;
         cell.setValue(result);
       } else {
@@ -154,6 +175,7 @@ public class ExcelXmlParser {
       for (ExcelRow tmpRow : excelRows) {
         insertSql.append(tmpRow.toString());
       }
+      //System.out.println(insertSql);
       this.importSqlQueue.add(insertSql.toString());
       ExcelRow header = excelRows.get(0);
       excelRows.clear();
@@ -170,7 +192,7 @@ public class ExcelXmlParser {
    * @throws DocumentException
    */
   private void composeSqlStatement(final Element sheetData, final String fileName, final Map<Integer, String> schema) throws FileNotFoundException, DocumentException {
-    val start= System.currentTimeMillis();
+    val start = System.currentTimeMillis();
     Iterator<Element> it = sheetData.elementIterator();
     List<ExcelRow> excelRows = new LinkedList<>();
 
@@ -268,6 +290,7 @@ public class ExcelXmlParser {
 
   /**
    * 将sharedStrings.xml的内容缓存起来
+   *
    * @param fileName
    * @return
    * @throws FileNotFoundException
@@ -280,8 +303,13 @@ public class ExcelXmlParser {
       throw new FileNotFoundException(fileName + " not exists");
     }
     val reader = new SAXReader();
+    val start = System.currentTimeMillis();
+    System.out.println("-------load str content xml------");
     val document = reader.read(new File(path));
     val root = document.getRootElement();
+    val end = System.currentTimeMillis();
+    System.out.println("load str content xml cost:" + (end - start));
+    System.out.println("");
     int index = 0;
     Iterator<Element> children = root.elementIterator();
     while (children.hasNext()) {
@@ -300,5 +328,8 @@ public class ExcelXmlParser {
 
   @Value("${oracle.threshold}")
   private int threshold;
+
+  @Value("${excel.version}")
+  private String version;
 
 }
