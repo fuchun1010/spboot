@@ -29,12 +29,12 @@ public class ExcelRow {
   @Override
   public String toString() {
 
-    StringBuffer sb = isHeader ? headerSql(cells) : selectSql(cells);
+    StringBuilder sb = isHeader ? headerSql(cells) : selectSql(cells);
     return sb.toString();
   }
 
-  private StringBuffer selectSql(@NonNull List<ExcelCell> cells) {
-    StringBuffer sb = new StringBuffer();
+  private StringBuilder selectSql(@NonNull List<ExcelCell> cells) {
+    StringBuilder sb = new StringBuilder();
     sb.append("select ");
     List<String> cellValues = new LinkedList<>();
     for (ExcelCell cell : cells) {
@@ -49,8 +49,8 @@ public class ExcelRow {
     return sb;
   }
 
-  private StringBuffer headerSql(@NonNull List<ExcelCell> cells) {
-    StringBuffer sb = new StringBuffer();
+  private StringBuilder headerSql(@NonNull List<ExcelCell> cells) {
+    StringBuilder sb = new StringBuilder();
     sb.append("insert into tab_excel ");
     return sb;
   }

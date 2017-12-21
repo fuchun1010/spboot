@@ -171,7 +171,7 @@ public class ExcelXmlParser {
       //给最后一行打标记,最后一行和其他行需要拼接的内容是不一致的
       ExcelRow lastRow = excelRows.get(excelRows.size() - 1);
       lastRow.isLast = true;
-      StringBuffer insertSql = new StringBuffer();
+      StringBuilder insertSql = new StringBuilder();
       for (ExcelRow tmpRow : excelRows) {
         insertSql.append(tmpRow.toString());
       }
