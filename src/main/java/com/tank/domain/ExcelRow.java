@@ -23,7 +23,7 @@ public class ExcelRow {
   }
 
   public int cellsNumber() {
-    return cells.size() ;
+    return cells.size();
   }
 
   @Override
@@ -34,7 +34,8 @@ public class ExcelRow {
   }
 
   private StringBuffer selectSql(@NonNull List<ExcelCell> cells) {
-    StringBuffer sb = new StringBuffer("select ");
+    StringBuffer sb = new StringBuffer();
+    sb.append("select ");
     List<String> cellValues = new LinkedList<>();
     for (ExcelCell cell : cells) {
       cellValues.add(cell.toString());
@@ -49,7 +50,8 @@ public class ExcelRow {
   }
 
   private StringBuffer headerSql(@NonNull List<ExcelCell> cells) {
-    StringBuffer sb = new StringBuffer("insert into tab_excel ");
+    StringBuffer sb = new StringBuffer();
+    sb.append("insert into tab_excel ");
     return sb;
   }
 }

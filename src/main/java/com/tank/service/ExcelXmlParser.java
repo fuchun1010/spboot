@@ -175,11 +175,15 @@ public class ExcelXmlParser {
       for (ExcelRow tmpRow : excelRows) {
         insertSql.append(tmpRow.toString());
       }
-      //System.out.println(insertSql);
       this.importSqlQueue.add(insertSql.toString());
       ExcelRow header = excelRows.get(0);
       excelRows.clear();
       excelRows.add(header);
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
   }
 
@@ -221,8 +225,10 @@ public class ExcelXmlParser {
     sendExcelRowsToQueue(excelRows);
     //清空缓存
     shareStrMap.clear();
+    excelRows.clear();
     val end = System.currentTimeMillis();
     System.out.println("total cost--->" + (end - start));
+
   }
 
   private ExcelRow headerRow(Element item) {
