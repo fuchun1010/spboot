@@ -1,5 +1,6 @@
 package com.tank;
 
+import com.tank.common.toolkit.DirectoryToolKit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -22,6 +23,8 @@ public class App {
 
     BlockingQueue<String> queue = (BlockingQueue<String>) context.getBean("importSqlQueue");
     JdbcTemplate jdbcTemplate = (JdbcTemplate) context.getBean("oracleJdbcTemplate");
+    DirectoryToolKit.upLoadPath("data");
+    DirectoryToolKit.upLoadPath("schema");
     Executors.newCachedThreadPool().execute(() -> {
       while (true) {
         try {

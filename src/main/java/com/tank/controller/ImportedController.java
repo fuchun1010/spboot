@@ -1,20 +1,28 @@
 package com.tank.controller;
 
-import com.tank.common.toolkit.ExcelToolkit;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.tank.common.toolkit.DirectoryToolKit;
+import com.tank.dao.SchemaDAO;
+import com.tank.message.schema.SchemaRes;
 import com.tank.service.ExcelXmlParser;
 import lombok.val;
+import net.lingala.zip4j.core.ZipFile;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import java.util.Optional;
+import java.util.zip.ZipException;
 
 /**
  * oracle 数据导入router
@@ -26,27 +34,53 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 @RequestMapping(path = "/imported/api", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ImportedController {
 
-  @PostMapping(path = "/import-data")
-  public ResponseEntity<Map<String, String>> importDataFromExcel(@RequestBody Map<String, String> parameters) {
+  @PostMapping(path = "/import-data/{schemaId}")
+  public ResponseEntity<Map<String, String>> importDataFromExcel(
+      @PathVariable String schemaId,
+      @RequestParam MultipartFile file
+  ) {
     val response = new HashMap<String, String>();
-    val name = parameters.get("name");
-    val map = ExcelToolkit.schema();
-    String fileName = Objects.isNull(name) ? "Workbook2.xlsx" : name;
-    try {
-      excelXmlParser.importExcelToOracle(fileName,map);
-      response.putIfAbsent("status", "ok");
+    response.putIfAbsent("status", "ok");
+    try (ByteArrayInputStream in = new ByteArrayInputStream(file.getBytes())) {
+      Optional<SchemaRes> schemaOpt = this.schemaDAO.fetchSchemaResponse(schemaId);
+      if (schemaOpt.isPresent()) {
+        SchemaRes schemaRes = schemaOpt.get();
+        Map<Integer, String> mapped = schemaRes.toIndexedType();
+        val fileName = file.getOriginalFilename();
+        val dataDir = DirectoryToolKit.upLoadPath("data");
+        val dataFilePath = dataDir + File.separator + fileName;
+        System.out.println(fileName);
+        Files.copy(in, new File(dataFilePath).toPath(), StandardCopyOption.REPLACE_EXISTING);
+        ZipFile zipFile = new ZipFile(dataFilePath);
+        val unZipDir = DirectoryToolKit.createDataUnzipDir(dataFilePath);
+        zipFile.extractAll(unZipDir);
+      }
+      return ResponseEntity.ok(response);
     } catch (Exception e) {
-      e.printStackTrace();
       response.putIfAbsent("error", e.getLocalizedMessage());
-      return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(response);
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
-    return ResponseEntity.ok(response);
+
+//    val name = parameters.get("name");
+//    val map = ExcelToolkit.schema();
+//    String fileName = Objects.isNull(name) ? "Workbook2.xlsx" : name;
+//    try {
+//      excelXmlParser.importExcelToOracle(fileName,map);
+//
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//      response.putIfAbsent("error", e.getLocalizedMessage());
+//      return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(response);
+//    }
+
   }
 
-  @Autowired
-  private JdbcTemplate oracleJdbcTemplate;
 
   @Autowired
   private ExcelXmlParser excelXmlParser;
+
+  @Autowired
+  private SchemaDAO schemaDAO;
 
 }
