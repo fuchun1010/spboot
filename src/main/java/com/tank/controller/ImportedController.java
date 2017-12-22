@@ -1,6 +1,5 @@
 package com.tank.controller;
 
-import com.mashape.unirest.http.exceptions.UnirestException;
 import com.tank.common.toolkit.DirectoryToolKit;
 import com.tank.dao.SchemaDAO;
 import com.tank.message.schema.SchemaRes;
@@ -16,13 +15,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.zip.ZipException;
 
 /**
  * oracle 数据导入router
