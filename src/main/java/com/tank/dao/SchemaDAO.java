@@ -21,7 +21,7 @@ public class SchemaDAO {
 
     Unirest.setObjectMapper(new JacksonObjectMapper());
     val url = "http://localhost:3006/imported/{schemaId}";
-    HttpRequest request = Unirest.get(url).header("accept", "application/json").routeParam("schemaId", schemaId);
+    HttpRequest request = Unirest.get(schemaIdUrl).header("accept", "application/json").routeParam("schemaId", schemaId);
     SchemaRes response = HttpClientHelper.request(request,SchemaRes.class).getBody();
     SchemaRes schemaRes = new SchemaRes();
     schemaRes.setTypes(response.getTypes()).setTable(response.getTable());
