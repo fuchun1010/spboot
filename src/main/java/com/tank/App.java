@@ -1,6 +1,9 @@
 package com.tank;
 
 import com.tank.common.toolkit.DirectoryToolKit;
+import com.tank.dao.ImportLogDAO;
+import com.tank.domain.ImportedUnit;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -21,15 +24,21 @@ public class App {
 
     ApplicationContext context = SpringApplication.run(App.class);
 
-    BlockingQueue<String> queue = (BlockingQueue<String>) context.getBean("importSqlQueue");
+    BlockingQueue<ImportedUnit> queue = (BlockingQueue<ImportedUnit>) context.getBean("importSqlQueue");
     JdbcTemplate jdbcTemplate = (JdbcTemplate) context.getBean("oracleJdbcTemplate");
+    ImportLogDAO importLogDAO = (ImportLogDAO) context.getBean("importLog");
     DirectoryToolKit.createOrGetUpLoadPath("data");
     DirectoryToolKit.createOrGetUpLoadPath("schema");
     Executors.newCachedThreadPool().execute(() -> {
       while (true) {
         try {
-          String insertSql = queue.take();
-          jdbcTemplate.execute(insertSql);
+          ImportedUnit importedUnit = queue.take();
+          if (importedUnit.isOver()) {
+            importLogDAO.endImportedLog(importedUnit);
+          } else {
+            jdbcTemplate.execute(importedUnit.getInsertSql());
+          }
+
           System.out.println("inserted ok");
         } catch (InterruptedException e) {
           e.printStackTrace();
@@ -40,9 +49,16 @@ public class App {
   }
 
   @Bean(name = "importSqlQueue")
-  public BlockingQueue<String> importSqlQueue() {
+  public BlockingQueue<ImportedUnit> importSqlQueue() {
     return new LinkedBlockingDeque<>();
   }
 
 
+  @Bean(name = "importLog")
+  public ImportLogDAO importLogDAO() {
+    return this.importLogDAO;
+  }
+
+  @Autowired
+  public ImportLogDAO importLogDAO;
 }

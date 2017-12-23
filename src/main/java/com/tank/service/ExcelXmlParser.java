@@ -4,6 +4,8 @@ import com.tank.common.toolkit.DirectoryToolKit;
 import com.tank.common.toolkit.ExcelToolkit;
 import com.tank.domain.ExcelCell;
 import com.tank.domain.ExcelRow;
+import com.tank.domain.ImportedUnit;
+import com.tank.message.schema.SchemaRes;
 import lombok.NonNull;
 import lombok.val;
 import org.dom4j.Attribute;
@@ -34,7 +36,9 @@ public class ExcelXmlParser {
    *
    * @param fileName
    */
-  public void importExcelToOracle(@NonNull final String fileName, Map<Integer, String> schema) throws FileNotFoundException, DocumentException {
+  public void importExcelToOracle(
+      @NonNull final String fileName,
+      @NonNull final SchemaRes schemaRes) throws FileNotFoundException, DocumentException {
     val start = System.currentTimeMillis();
     System.out.println("***************************");
     System.out.println("start load sheet.xml");
@@ -46,7 +50,10 @@ public class ExcelXmlParser {
     if (Objects.isNull(sheetDataNode)) {
       throw new DocumentException("sheetData node没有找到");
     }
-    composeSqlStatement(sheetDataNode, fileName, schema);
+    val schema = schemaRes.toIndexedType();
+    val tableName = schemaRes.getTable();
+    val creator_id = schemaRes.getCreator_id();
+    composeSqlStatement(sheetDataNode, fileName, schema, tableName, creator_id);
   }
 
   /**
@@ -179,7 +186,9 @@ public class ExcelXmlParser {
       for (ExcelRow tmpRow : excelRows) {
         insertSql.append(tmpRow.toString());
       }
-      this.importSqlQueue.add(insertSql.toString());
+      ImportedUnit importedUnit = new ImportedUnit();
+      importedUnit.setOver(false).setInsertSql(insertSql.toString());
+      this.importSqlQueue.add(importedUnit);
       ExcelRow header = excelRows.get(0);
       excelRows.clear();
       excelRows.add(header);
@@ -199,7 +208,13 @@ public class ExcelXmlParser {
    * @throws FileNotFoundException
    * @throws DocumentException
    */
-  private void composeSqlStatement(final Element sheetData, final String fileName, final Map<Integer, String> schema) throws FileNotFoundException, DocumentException {
+  private void composeSqlStatement(
+      final Element sheetData,
+      final String fileName,
+      final Map<Integer, String> schema,
+      final String tableName,
+      final String creator_id
+  ) throws FileNotFoundException, DocumentException {
     val start = System.currentTimeMillis();
     Iterator<Element> it = sheetData.elementIterator();
     List<ExcelRow> excelRows = new LinkedList<>();
@@ -211,7 +226,7 @@ public class ExcelXmlParser {
     while (it.hasNext()) {
       Element item = it.next();
       val isHeaderRow = excelRows.size() == 0;
-      ExcelRow row = isHeaderRow ? headerRow(item) : initExcelRow(item, schema, shareStrMap, uuidValue);
+      ExcelRow row = isHeaderRow ? headerRow(item, tableName) : initExcelRow(item, schema, shareStrMap, uuidValue);
       int cellsDiffer = totalColumn - row.cellsNumber();
       //补缺乏的单元格(后面缺乏)
       if (cellsDiffer > 0) {
@@ -221,7 +236,7 @@ public class ExcelXmlParser {
         }
       }
 
-      if(!isHeaderRow) {
+      if (!isHeaderRow) {
         ExcelCell uuidCell = new ExcelCell();
         uuidCell.setType("s");
         uuidCell.setValue(uuidValue);
@@ -236,6 +251,13 @@ public class ExcelXmlParser {
     }
     //可能还有剩余的数据没有处理
     sendExcelRowsToQueue(excelRows);
+    //加入一个结束的标志
+    ImportedUnit importedUnit = new ImportedUnit();
+    importedUnit.setOver(true)
+        .setTableName(tableName)
+        .setUuid(uuidValue)
+        .setCreator_id(creator_id);
+    this.importSqlQueue.add(importedUnit);
     //清空缓存
     shareStrMap.clear();
     excelRows.clear();
@@ -244,9 +266,10 @@ public class ExcelXmlParser {
 
   }
 
-  private ExcelRow headerRow(Element item) {
+  private ExcelRow headerRow(Element item, String tableName) {
     ExcelRow row = new ExcelRow();
     row.isHeader = true;
+    row.tableName = tableName;
     Iterator<Element> cells = item.elementIterator();
     while (cells.hasNext()) {
       ExcelCell cell = new ExcelCell();
@@ -339,7 +362,7 @@ public class ExcelXmlParser {
   }
 
   @Autowired
-  private BlockingQueue<String> importSqlQueue;
+  private BlockingQueue<ImportedUnit> importSqlQueue;
 
   @Value("${oracle.threshold}")
   private int threshold;

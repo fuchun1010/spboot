@@ -16,8 +16,9 @@ excel:
   version: 2016
 
 esAgent:
-  schemaIdUrl: http://192.168.1.221:3006/excel/schema-fields/{schemaId}
-  importedLogServiceUrl: http://localhost:3006/imported/log
+  schemaIdUrl: http://localhost:3006/excel/schema-fields/{schemaId}
+  startImportLogUrl: http://localhost:3006/imported/log
+
 
 spring:
   http:

@@ -56,16 +56,19 @@ public class ImportedController {
       Optional<SchemaRes> schemaOpt = this.schemaDAO.fetchSchemaResponse(schemaId);
       if (schemaOpt.isPresent()) {
         SchemaRes schemaRes = schemaOpt.get();
+        val creator_id = schemaRes.getCreator_id();
         Map<Integer, String> mapped = schemaRes.toIndexedType();
         val fileName = file.getOriginalFilename();
         val dataDir = DirectoryToolKit.createOrGetUpLoadPath("data");
         val dataFilePath = dataDir + File.separator + fileName;
         System.out.println(fileName);
+
         Files.copy(in, new File(dataFilePath).toPath(), REPLACE_EXISTING);
         ZipFile zipFile = new ZipFile(dataFilePath);
         val unZipDir = DirectoryToolKit.createDataUnzipDir(dataFilePath);
         zipFile.extractAll(unZipDir);
-        this.excelXmlParser.importExcelToOracle(fileName, mapped);
+        String tableName = schemaRes.getTable();
+        this.excelXmlParser.importExcelToOracle(fileName, schemaRes);
         response.putIfAbsent("status", "success");
       }
       return ResponseEntity.status(ACCEPTED).body(response);

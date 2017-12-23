@@ -16,6 +16,7 @@ public class ExcelRow {
   public boolean isLast = false;
 
   private String delimiter = ",";
+  public String tableName = null;
   private List<ExcelCell> cells = new LinkedList<>();
 
   public void addCell(@NonNull ExcelCell excelCell) {
@@ -29,7 +30,7 @@ public class ExcelRow {
   @Override
   public String toString() {
 
-    StringBuilder sb = isHeader ? headerSql(cells) : selectSql(cells);
+    StringBuilder sb = isHeader ? headerSql() : selectSql(cells);
     return sb.toString();
   }
 
@@ -49,9 +50,11 @@ public class ExcelRow {
     return sb;
   }
 
-  private StringBuilder headerSql(@NonNull List<ExcelCell> cells) {
+  private StringBuilder headerSql() {
     StringBuilder sb = new StringBuilder();
-    sb.append("insert into tab_excel ");
+    sb.append("insert into ");
+    sb.append(tableName);
+    sb.append(" ");
     return sb;
   }
 }
