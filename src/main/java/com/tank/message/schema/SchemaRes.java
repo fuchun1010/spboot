@@ -14,6 +14,8 @@ import java.util.Map;
 @Accessors(chain = true)
 public class SchemaRes {
   private String table;
+  private String creator_id;
+  private String desc;
   private List<SchemaItem> types;
 
   public Map<Integer, String> toIndexedType() {

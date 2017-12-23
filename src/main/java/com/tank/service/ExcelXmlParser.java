@@ -70,12 +70,18 @@ public class ExcelXmlParser {
    * 获取excel一行记录来初始化ExcelRow
    *
    * @param rowNode
-   * @param fileName
+   * @param schema
+   * @param sharedStrMap
+   * @param uuidValue    每行的uuid,同一个excel中每行的uuid相同
    * @return
    * @throws FileNotFoundException
    * @throws DocumentException
    */
-  private ExcelRow initExcelRow(Element rowNode, String fileName, Map<Integer, String> schema, Map<Integer, String> sharedStrMap) throws FileNotFoundException, DocumentException {
+  private ExcelRow initExcelRow(Element rowNode,
+                                Map<Integer, String> schema,
+                                Map<Integer, String> sharedStrMap,
+                                String uuidValue)
+      throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
     ExcelRow row = new ExcelRow();
 
@@ -134,7 +140,6 @@ public class ExcelXmlParser {
       } else {
         cell.setValue(value);
       }
-
       row.addCell(cell);
     }
     return row;
@@ -145,10 +150,9 @@ public class ExcelXmlParser {
    * 获取excel的列数
    *
    * @param sheetData
-   * @param fileName
    * @return
    */
-  private int getColumns(final Element sheetData, final String fileName) throws FileNotFoundException, DocumentException {
+  private int getColumns(final Element sheetData) throws FileNotFoundException, DocumentException {
     Iterator<Element> it = sheetData.elementIterator();
     Element item = it.next();
     Iterator<Element> cells = item.elementIterator();
@@ -200,12 +204,14 @@ public class ExcelXmlParser {
     Iterator<Element> it = sheetData.elementIterator();
     List<ExcelRow> excelRows = new LinkedList<>();
 
-    int totalColumn = getColumns(sheetData, fileName);
+    int totalColumn = getColumns(sheetData);
     val shareStrMap = this.sharedStrMapped(fileName);
+    val uuid = UUID.randomUUID();
+    val uuidValue = uuid.toString();
     while (it.hasNext()) {
       Element item = it.next();
       val isHeaderRow = excelRows.size() == 0;
-      ExcelRow row = isHeaderRow ? headerRow(item) : initExcelRow(item, fileName, schema, shareStrMap);
+      ExcelRow row = isHeaderRow ? headerRow(item) : initExcelRow(item, schema, shareStrMap, uuidValue);
       int cellsDiffer = totalColumn - row.cellsNumber();
       //补缺乏的单元格(后面缺乏)
       if (cellsDiffer > 0) {
@@ -213,6 +219,13 @@ public class ExcelXmlParser {
         for (ExcelCell tmp : tmpCells) {
           row.addCell(tmp);
         }
+      }
+
+      if(!isHeaderRow) {
+        ExcelCell uuidCell = new ExcelCell();
+        uuidCell.setType("s");
+        uuidCell.setValue(uuidValue);
+        row.addCell(uuidCell);
       }
 
       excelRows.add(row);
@@ -252,44 +265,40 @@ public class ExcelXmlParser {
    */
   private Element fetchSheetDataNode(@NonNull String fileName) throws DocumentException, FileNotFoundException {
     SAXReader reader = new SAXReader();
-
     String sheetPath = this.absoluteSheetPath(fileName);
     Document document = reader.read(new FileInputStream(new File(sheetPath)));
     Element root = document.getRootElement();
-    Iterator<Element> it = root.elementIterator();
-
-    while (it.hasNext()) {
-      Element item = it.next();
-      boolean isSheetDataNode = "sheetData".equalsIgnoreCase(item.getName());
-      if (isSheetDataNode) {
-        return item;
-      }
+    Iterator<Element> it = root.elementIterator("sheetData");
+    if (!it.hasNext()) {
+      throw new NoSuchElementException("there is no sheetData");
     }
-
-    return null;
+    return it.next();
   }
 
 
   private String absoluteSheetPath(final @NonNull String fileName) throws FileNotFoundException {
     val onlyFileName = fileName.replace(".xlsx", "");
-    val realPath = DirectoryToolKit.downloadDir() + separator + onlyFileName + separator + "xl" + File.separator + "worksheets";
+    val subDirName = "data";
+    val realPath = DirectoryToolKit.createOrGetUpLoadPath(subDirName) + separator + onlyFileName + separator + "xl" + File.separator + "worksheets";
     val sheetsDir = new File(realPath);
     if (!sheetsDir.exists()) {
       throw new FileNotFoundException(fileName + "解压处理异常");
     }
+    val fileIndex = 0;
     val files = sheetsDir.listFiles();
     if (!Objects.isNull(files)) {
-      return files[0].getAbsolutePath();
+      return files[fileIndex].getAbsolutePath();
     }
     return "failure";
   }
 
-  private String absoluteContentTypePath(final @NonNull String fileName) throws FileNotFoundException {
+  private String absoluteSharedStringsPath(final @NonNull String fileName) throws FileNotFoundException {
     val onlyFileName = fileName.replace(".xlsx", "");
-    val realPath = DirectoryToolKit.downloadDir() + separator + onlyFileName + separator + "xl" + File.separator + "sharedStrings.xml";
+    val subDirName = "data";
+    val realPath = DirectoryToolKit.createOrGetUpLoadPath(subDirName) + separator + onlyFileName + separator + "xl" + File.separator + "sharedStrings.xml";
     val contentFile = new File(realPath);
     if (!contentFile.exists()) {
-      throw new FileNotFoundException(fileName + " Content_Types.xml不正确");
+      throw new FileNotFoundException(fileName + " sharedStrings.xml不正确");
     }
     return realPath;
   }
@@ -304,7 +313,7 @@ public class ExcelXmlParser {
    */
   private Map<Integer, String> sharedStrMapped(final @NonNull String fileName) throws FileNotFoundException, DocumentException {
     Map<Integer, String> mapped = new HashMap<>();
-    val path = this.absoluteContentTypePath(fileName);
+    val path = this.absoluteSharedStringsPath(fileName);
     if (!new File(path).exists()) {
       throw new FileNotFoundException(fileName + " not exists");
     }

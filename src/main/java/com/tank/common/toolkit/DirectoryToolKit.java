@@ -28,23 +28,11 @@ public class DirectoryToolKit {
   }
 
   /**
-   * 获取上传目录
    *
+   * @param subDirName
    * @return
    */
-  public static String uploadDir() {
-    val currentPath = new File(".");
-    val absolutePath = currentPath.getAbsolutePath().replace(".", "");
-    val downloadPath = absolutePath + "download" + separator;
-    val downloadDir = new File(downloadPath);
-    if (!downloadDir.exists()) {
-      downloadDir.mkdir();
-    }
-    return downloadDir.getAbsolutePath();
-  }
-
-
-  public static String upLoadPath(String subDirName) {
+  public static String createOrGetUpLoadPath(String subDirName) {
     val currentPath = new File(".");
     val absolutePath = currentPath.getAbsolutePath().replace(".", "");
     val uploadDirPath = absolutePath + "upload" + separator;

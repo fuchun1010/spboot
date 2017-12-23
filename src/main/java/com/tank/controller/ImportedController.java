@@ -1,11 +1,13 @@
 package com.tank.controller;
 
 import com.tank.common.toolkit.DirectoryToolKit;
+import com.tank.common.toolkit.ExcelToolkit;
 import com.tank.dao.SchemaDAO;
 import com.tank.message.schema.SchemaRes;
 import com.tank.service.ExcelXmlParser;
 import lombok.val;
 import net.lingala.zip4j.core.ZipFile;
+import org.dom4j.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.springframework.http.HttpStatus.*;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.file.Files;
 
 import static java.nio.file.StandardCopyOption.*;
@@ -35,6 +38,13 @@ import java.util.Optional;
 @RequestMapping(path = "/imported/api", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ImportedController {
 
+  /**
+   * 将数据文件导入到对应的schema文件中去
+   *
+   * @param schemaId
+   * @param file
+   * @return
+   */
   @PostMapping(path = "/import-data/{schemaId}")
   public ResponseEntity<Map<String, String>> importDataFromExcel(
       @PathVariable String schemaId,
@@ -48,7 +58,7 @@ public class ImportedController {
         SchemaRes schemaRes = schemaOpt.get();
         Map<Integer, String> mapped = schemaRes.toIndexedType();
         val fileName = file.getOriginalFilename();
-        val dataDir = DirectoryToolKit.upLoadPath("data");
+        val dataDir = DirectoryToolKit.createOrGetUpLoadPath("data");
         val dataFilePath = dataDir + File.separator + fileName;
         System.out.println(fileName);
         Files.copy(in, new File(dataFilePath).toPath(), REPLACE_EXISTING);
@@ -56,8 +66,8 @@ public class ImportedController {
         val unZipDir = DirectoryToolKit.createDataUnzipDir(dataFilePath);
         zipFile.extractAll(unZipDir);
         this.excelXmlParser.importExcelToOracle(fileName, mapped);
+        response.putIfAbsent("status", "success");
       }
-      response.putIfAbsent("status", "success");
       return ResponseEntity.status(ACCEPTED).body(response);
     } catch (Exception e) {
       response.putIfAbsent("error", e.getLocalizedMessage());

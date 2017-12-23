@@ -67,6 +67,7 @@ public class ExcelToolkit {
     for (int i = start; i <= end; i++) {
       types.putIfAbsent(i, "n");
     }
+    types.putIfAbsent(19, "s");
     return types;
   }
 

@@ -23,8 +23,8 @@ public class App {
 
     BlockingQueue<String> queue = (BlockingQueue<String>) context.getBean("importSqlQueue");
     JdbcTemplate jdbcTemplate = (JdbcTemplate) context.getBean("oracleJdbcTemplate");
-    DirectoryToolKit.upLoadPath("data");
-    DirectoryToolKit.upLoadPath("schema");
+    DirectoryToolKit.createOrGetUpLoadPath("data");
+    DirectoryToolKit.createOrGetUpLoadPath("schema");
     Executors.newCachedThreadPool().execute(() -> {
       while (true) {
         try {
