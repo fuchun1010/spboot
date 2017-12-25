@@ -37,9 +37,7 @@ public class ImportLogDAO {
     val counterSql = "select count(*) as cnt from " + table + " where recordFlag = ？";
     val importedNum = this.oracleJdbcTemplate.queryForObject(counterSql, new String[]{importedUnit.getUuid()}, Integer.class);
     val request = Unirest.post(endImportLogUrl)
-        .field("table", table)
         .field("uuid", uuid)
-        .field("creator_id", creator_id)
         .field("count", importedNum)
         .getHttpRequest();
     val sb = this.importLogMessage(creator_id);

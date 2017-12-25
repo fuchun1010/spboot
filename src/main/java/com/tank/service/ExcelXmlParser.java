@@ -2,6 +2,7 @@ package com.tank.service;
 
 import com.tank.common.toolkit.DirectoryToolKit;
 import com.tank.common.toolkit.ExcelToolkit;
+import com.tank.dao.ImportLogDAO;
 import com.tank.domain.ExcelCell;
 import com.tank.domain.ExcelRow;
 import com.tank.domain.ImportedUnit;
@@ -53,7 +54,8 @@ public class ExcelXmlParser {
     val schema = schemaRes.toIndexedType();
     val tableName = schemaRes.getTable();
     val creator_id = schemaRes.getCreator_id();
-    composeSqlStatement(sheetDataNode, fileName, schema, tableName, creator_id);
+    val desc = Optional.of(schemaRes.getDesc()).orElse("");
+    composeSqlStatement(sheetDataNode, fileName, schema, tableName, creator_id, desc);
   }
 
   /**
@@ -213,7 +215,8 @@ public class ExcelXmlParser {
       final String fileName,
       final Map<Integer, String> schema,
       final String tableName,
-      final String creator_id
+      final String creator_id,
+      final String desc
   ) throws FileNotFoundException, DocumentException {
     val start = System.currentTimeMillis();
     Iterator<Element> it = sheetData.elementIterator();
@@ -223,6 +226,10 @@ public class ExcelXmlParser {
     val shareStrMap = this.sharedStrMapped(fileName);
     val uuid = UUID.randomUUID();
     val uuidValue = uuid.toString();
+    ImportedUnit startImportUnit = new ImportedUnit();
+    startImportUnit.setCreator_id(creator_id).setTableName(tableName).setUuid(uuidValue).setDesc(desc);
+    //开始导入,记录导入历史
+    this.importLogDAO.startImportLog(startImportUnit);
     while (it.hasNext()) {
       Element item = it.next();
       val isHeaderRow = excelRows.size() == 0;
@@ -369,5 +376,8 @@ public class ExcelXmlParser {
 
   @Value("${excel.version}")
   private String version;
+
+  @Autowired
+  private ImportLogDAO importLogDAO;
 
 }

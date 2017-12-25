@@ -1,6 +1,7 @@
 package com.tank.controller;
 
 import com.tank.common.toolkit.DirectoryToolKit;
+import com.tank.dao.ImportLogDAO;
 import com.tank.dao.SchemaDAO;
 import com.tank.message.schema.SchemaRes;
 import com.tank.service.ExcelXmlParser;
@@ -60,6 +61,7 @@ public class ImportedController {
         ZipFile zipFile = new ZipFile(dataFilePath);
         val unZipDir = DirectoryToolKit.createDataUnzipDir(dataFilePath);
         zipFile.extractAll(unZipDir);
+
         this.excelXmlParser.importExcelToOracle(fileName, schemaRes);
         response.putIfAbsent("status", "success");
       }
@@ -77,5 +79,7 @@ public class ImportedController {
 
   @Autowired
   private SchemaDAO schemaDAO;
+
+
 
 }
