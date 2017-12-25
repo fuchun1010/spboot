@@ -5,7 +5,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.tank.common.JacksonObjectMapper;
 import com.tank.domain.ImportedUnit;
-import com.tank.message.schema.SchemaRes;
 import com.tank.message.status.StatusRes;
 import lombok.NonNull;
 import lombok.val;
@@ -14,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.logging.Level;
+import static java.util.logging.Level.*;
 import java.util.logging.Logger;
 
 /**
@@ -50,13 +49,13 @@ public class ImportLogDAO {
         sb.append(" success imported ");
         sb.append(importedNum);
         sb.append(" records");
-        logger.log(Level.INFO, sb.toString());
+        logger.log(INFO, sb.toString());
       }
 
     } catch (UnirestException e) {
       sb.append(" end imported exception:---->");
       sb.append(e.getLocalizedMessage());
-      logger.log(Level.WARNING, sb.toString());
+      logger.log(WARNING, sb.toString());
       e.printStackTrace();
     }
 
@@ -84,12 +83,12 @@ public class ImportLogDAO {
       val status = HttpClientHelper.request(request, StatusRes.class).getBody();
       if (status.isSuccess()) {
         sb.append(" success start import data");
-        logger.log(Level.INFO, sb.toString());
+        logger.log(INFO, sb.toString());
       }
     } catch (UnirestException e) {
       sb.append(" start import exception:---->");
       sb.append(e.getLocalizedMessage());
-      logger.log(Level.WARNING, sb.toString());
+      logger.log(WARNING, sb.toString());
       e.printStackTrace();
     }
 

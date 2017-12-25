@@ -14,6 +14,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import static java.util.logging.Level.*;
+
+import java.util.logging.Logger;
+
 /**
  * @author fuchun
  */
@@ -23,12 +27,13 @@ public class App {
   public static void main(final String... args) {
 
     ApplicationContext context = SpringApplication.run(App.class);
-
+    Logger logger = Logger.getLogger(App.class.getName());
     BlockingQueue<ImportedUnit> queue = (BlockingQueue<ImportedUnit>) context.getBean("importSqlQueue");
     JdbcTemplate jdbcTemplate = (JdbcTemplate) context.getBean("oracleJdbcTemplate");
     ImportLogDAO importLogDAO = (ImportLogDAO) context.getBean("importLog");
     DirectoryToolKit.createOrGetUpLoadPath("data");
     DirectoryToolKit.createOrGetUpLoadPath("schema");
+
     Executors.newCachedThreadPool().execute(() -> {
       while (true) {
         try {
@@ -41,6 +46,7 @@ public class App {
 
           System.out.println("inserted ok");
         } catch (InterruptedException e) {
+          logger.log(WARNING, " write oracle exception:" + e.getLocalizedMessage());
           e.printStackTrace();
         }
       }
@@ -61,4 +67,6 @@ public class App {
 
   @Autowired
   public ImportLogDAO importLogDAO;
+
+
 }

@@ -55,7 +55,6 @@ public class ImportedController {
         val fileName = file.getOriginalFilename();
         val dataDir = DirectoryToolKit.createOrGetUpLoadPath("data");
         val dataFilePath = dataDir + File.separator + fileName;
-        System.out.println(fileName);
 
         Files.copy(in, new File(dataFilePath).toPath(), REPLACE_EXISTING);
         ZipFile zipFile = new ZipFile(dataFilePath);
