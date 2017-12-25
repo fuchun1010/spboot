@@ -21,19 +21,18 @@ public class DirectoryToolKit {
    *
    * @return
    */
-  public static String downloadDir() {
+  public static String createLogDir(final String dirName) {
     val currentPath = new File(".");
     val absolutePath = currentPath.getAbsolutePath().replace(".", "");
-    val downloadPath = absolutePath + "download/";
-    val downloadDir = new File(downloadPath);
-    if (!downloadDir.exists()) {
-      downloadDir.mkdir();
+    val downloadPath = absolutePath + dirName + File.separator;
+    val logDir = new File(downloadPath);
+    if (!logDir.exists()) {
+      logDir.mkdirs();
     }
-    return downloadDir.getAbsolutePath();
+    return logDir.getAbsolutePath();
   }
 
   /**
-   *
    * @param subDirName
    * @return
    */
@@ -60,10 +59,11 @@ public class DirectoryToolKit {
 
   /**
    * 上传文件并获取路径
+   *
    * @param file
    * @return
    */
-  public static String uploadFileAndGetPath(MultipartFile file,String subDirName) {
+  public static String uploadFileAndGetPath(MultipartFile file, String subDirName) {
     val schemaDirPath = DirectoryToolKit.createOrGetUpLoadPath(subDirName);
     String uploadFilePath = schemaDirPath + File.separator + file.getOriginalFilename();
     File uploadedFile = new File(uploadFilePath);

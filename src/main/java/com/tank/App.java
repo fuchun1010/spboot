@@ -33,7 +33,7 @@ public class App {
     ImportLogDAO importLogDAO = (ImportLogDAO) context.getBean("importLog");
     DirectoryToolKit.createOrGetUpLoadPath("data");
     DirectoryToolKit.createOrGetUpLoadPath("schema");
-
+    DirectoryToolKit.createLogDir("logs");
     Executors.newCachedThreadPool().execute(() -> {
       while (true) {
         try {
@@ -59,7 +59,6 @@ public class App {
     return new LinkedBlockingDeque<>();
   }
 
-
   @Bean(name = "importLog")
   public ImportLogDAO importLogDAO() {
     return this.importLogDAO;
@@ -67,6 +66,5 @@ public class App {
 
   @Autowired
   public ImportLogDAO importLogDAO;
-
 
 }
