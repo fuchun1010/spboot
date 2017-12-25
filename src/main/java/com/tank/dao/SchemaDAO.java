@@ -27,7 +27,6 @@ public class SchemaDAO {
     SchemaRes response = HttpClientHelper.request(request,SchemaRes.class).getBody();
     SchemaRes schemaRes = new SchemaRes();
     schemaRes.setTypes(response.getTypes()).setTable(response.getTable());
-    Unirest.shutdown();
     return Optional.of(schemaRes);
   }
 

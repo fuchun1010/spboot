@@ -53,8 +53,8 @@ public class ExcelXmlParser {
     }
     val schema = schemaRes.toIndexedType();
     val tableName = schemaRes.getTable();
-    val creator_id = schemaRes.getCreator_id();
-    val desc = Optional.of(schemaRes.getDesc()).orElse("");
+    val creator_id = Objects.isNull(schemaRes.getCreator_id()) ? "" : schemaRes.getCreator_id();
+    val desc = Objects.isNull(schemaRes.getDesc()) ? "" : schemaRes.getDesc();
     composeSqlStatement(sheetDataNode, fileName, schema, tableName, creator_id, desc);
   }
 
@@ -88,8 +88,7 @@ public class ExcelXmlParser {
    */
   private ExcelRow initExcelRow(Element rowNode,
                                 Map<Integer, String> schema,
-                                Map<Integer, String> sharedStrMap,
-                                String uuidValue)
+                                Map<Integer, String> sharedStrMap)
       throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
     ExcelRow row = new ExcelRow();
@@ -233,7 +232,7 @@ public class ExcelXmlParser {
     while (it.hasNext()) {
       Element item = it.next();
       val isHeaderRow = excelRows.size() == 0;
-      ExcelRow row = isHeaderRow ? headerRow(item, tableName) : initExcelRow(item, schema, shareStrMap, uuidValue);
+      ExcelRow row = isHeaderRow ? headerRow(item, tableName) : initExcelRow(item, schema, shareStrMap);
       int cellsDiffer = totalColumn - row.cellsNumber();
       //补缺乏的单元格(后面缺乏)
       if (cellsDiffer > 0) {

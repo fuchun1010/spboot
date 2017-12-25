@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author fuchun
@@ -21,7 +22,16 @@ public class SchemaRes {
   public Map<Integer, String> toIndexedType() {
     Map<Integer, String> mapped = new HashMap<>();
     for (SchemaItem item : types) {
-      mapped.putIfAbsent(item.getIndex(), item.getType());
+      String type = item.getType();
+      if (type.indexOf("date") != -1) {
+        type = "d";
+      } else if (type.indexOf("varchar2") != -1) {
+        type = "s";
+      } else {
+        type = "n";
+      }
+
+      mapped.putIfAbsent(item.getIndex(), type);
     }
     return mapped;
   }
