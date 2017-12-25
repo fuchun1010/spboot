@@ -73,9 +73,11 @@ public class ImportLogDAO {
     val table = importedUnit.getTableName();
     val uuid = importedUnit.getUuid();
     val creator_id = importedUnit.getCreator_id();
+    val desc = importedUnit.getDesc();
     val request = Unirest.post(startImportLog)
         .field("table", table)
         .field("uuid", uuid)
+        .field("desc", desc)
         .field("creator_id", creator_id).getHttpRequest();
     val sb = this.importLogMessage(creator_id);
     try {

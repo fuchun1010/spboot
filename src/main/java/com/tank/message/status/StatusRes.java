@@ -7,9 +7,9 @@ import java.util.Objects;
 @Data
 public class StatusRes {
 
-  private String status;
+  private int status;
 
   public boolean isSuccess() {
-    return Objects.equals("success", this.status);
+    return status == 200 || status == 201;
   }
 }

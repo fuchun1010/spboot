@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.Optional;
 
+/**
+ * @author fuchun
+ */
 @Service
 public class SchemaDAO {
 
@@ -20,7 +23,6 @@ public class SchemaDAO {
   public Optional<SchemaRes> fetchSchemaResponse(String schemaId) throws UnirestException, IOException {
 
     Unirest.setObjectMapper(new JacksonObjectMapper());
-    val url = "http://localhost:3006/imported/{schemaId}";
     HttpRequest request = Unirest.get(schemaIdUrl).header("accept", "application/json").routeParam("schemaId", schemaId);
     SchemaRes response = HttpClientHelper.request(request,SchemaRes.class).getBody();
     SchemaRes schemaRes = new SchemaRes();
