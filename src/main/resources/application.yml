@@ -17,7 +17,8 @@ excel:
 
 esAgent:
   schemaIdUrl: http://localhost:3006/excel/schema-fields/{schemaId}
-  startImportLogUrl: http://localhost:3006/imported/log
+  startImportLog: http://localhost:3006/start/imported-log
+  endImportLogUrl: http://localhost:3006/imported/log
 
 
 spring:
