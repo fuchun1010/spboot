@@ -138,7 +138,7 @@ public class ExcelXmlParser {
       boolean isDateType = "d".equalsIgnoreCase(cell.getType());
 
       if (isDateType) {
-        val result = Objects.isNull(value) ? null : ExcelToolkit.converToDateStr(Integer.parseInt(value));
+        val result = Objects.isNull(value) ? null : ExcelToolkit.convert2DateStr(Integer.parseInt(value));
         cell.setValue(result);
       } else if (isString) {
         val index = Integer.parseInt(value);

@@ -24,92 +24,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class ExcelToolkit {
 
   /**
-   * c1 date,
-   * c2 varchar2(50),
-   * c3 varchar2(50),
-   * c4 varchar2(50),
-   * c5 varchar2(50),
-   * c6 varchar2(50),
-   * c7 varchar2(50),
-   * c8 NUMERIC(20,2),
-   * c9 VARCHAR2(50),
-   * c10 NUMERIC(20,2),
-   * c11 VARCHAR2(50),
-   * c12 NUMERIC(10,2),
-   * c13 NUMERIC(10,2),
-   * c14 NUMERIC(10,2),
-   * c15 NUMERIC(10,2),
-   * c16 NUMERIC(10,2),
-   * c17 NUMERIC(10,2),
-   * c18 NUMERIC(10,2)
-   *
-   * @return
-   */
-
-  public static Map<Integer, String> schema() {
-    //TODO 这个是需要调用node.js的restful接口的
-    Map<Integer, String> types = new HashMap<>();
-    types.putIfAbsent(1, "d");
-    types.putIfAbsent(2, "n");
-    int start = 3;
-    int end = 5;
-    for (int i = start; i <= end; i++) {
-      types.putIfAbsent(i, "s");
-    }
-    types.putIfAbsent(6, "n");
-    types.putIfAbsent(7, "s");
-    types.putIfAbsent(8, "n");
-    types.putIfAbsent(9, "s");
-    types.putIfAbsent(10, "n");
-    types.putIfAbsent(11, "s");
-    start = 12;
-    end = 18;
-    for (int i = start; i <= end; i++) {
-      types.putIfAbsent(i, "n");
-    }
-    types.putIfAbsent(19, "s");
-    return types;
-  }
-
-  /**
-   * 产生zip文件
-   *
-   * @param file
-   * @return
-   * @throws IOException
-   */
-  public static String generateZipExcel(final @NonNull File file) throws IOException {
-    String path = DirectoryToolKit.downloadDir();
-    val zipFile = new File(path + File.separator + file.getName().replace("xlsx", "zip"));
-    Path source = Paths.get(file.toURI());
-    FileOutputStream out = new FileOutputStream(zipFile);
-    Files.copy(source, out);
-    out.flush();
-    out.close();
-    return zipFile.getAbsolutePath();
-  }
-
-  /**
-   * 解压excel文件
-   *
-   * @param filePath
-   * @return
-   * @throws ZipException
-   */
-  public static String unZipExcel(final @NonNull String filePath) throws ZipException {
-    File zipFile = new File(filePath);
-    String dirName = zipFile.getName().replace(".zip", "");
-    val dirPath = DirectoryToolKit.downloadDir() + File.separator + dirName;
-    File unZipFolder = new File(dirPath);
-    if (!unZipFolder.exists()) {
-      unZipFolder.mkdir();
-    }
-    ZipFile sourceZip = new ZipFile(zipFile);
-    sourceZip.extractAll(unZipFolder.getAbsolutePath());
-    return dirPath;
-  }
-
-  /**
    * 根据xml中c标记的字符串获取位置
    *
    * @param cellNo
@@ -130,7 +44,7 @@ public class ExcelToolkit {
    * @param dateTime
    * @return
    */
-  public static String converToDateStr(final @NonNull Integer dateTime) {
+  public static String convert2DateStr(final @NonNull Integer dateTime) {
     Calendar calendar = DateUtil.getJavaCalendar(dateTime);
     Date date = calendar.getTime();
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -144,7 +58,7 @@ public class ExcelToolkit {
    * @return
    */
   private static Map<String, Integer> createMapped() {
-    val map = new HashMap<String, Integer>();
+    val map = new HashMap<String, Integer>(1024);
     val start = 'A';
     val end = 'Z';
     int counter = 1;

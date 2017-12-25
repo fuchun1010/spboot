@@ -1,8 +1,13 @@
 package com.tank.common.toolkit;
 
 import lombok.val;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import static java.io.File.separator;
 
@@ -51,6 +56,23 @@ public class DirectoryToolKit {
       dir.mkdirs();
     }
     return path;
+  }
+
+  /**
+   * 上传文件并获取路径
+   * @param file
+   * @return
+   */
+  public static String uploadFileAndGetPath(MultipartFile file,String subDirName) {
+    val schemaDirPath = DirectoryToolKit.createOrGetUpLoadPath(subDirName);
+    String uploadFilePath = schemaDirPath + File.separator + file.getOriginalFilename();
+    File uploadedFile = new File(uploadFilePath);
+    try (ByteArrayInputStream in = new ByteArrayInputStream(file.getBytes())) {
+      Files.copy(in, uploadedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return uploadFilePath;
   }
 
 
