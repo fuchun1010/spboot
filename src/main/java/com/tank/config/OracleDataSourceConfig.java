@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+/**
+ * @author fuchun
+ */
 @Configuration
 @ComponentScan
 @EnableTransactionManagement

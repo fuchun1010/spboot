@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.util.Objects;
 
+/**
+ * @author fuchun
+ */
 @Data
 public class StatusRes {
 
