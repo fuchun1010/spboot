@@ -23,6 +23,7 @@ import java.util.Optional;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.OK;
 
 /**
  * oracle 数据导入router
@@ -73,12 +74,33 @@ public class ImportedController {
   }
 
 
+  /**
+   * 按照uuid删除一批已经导入的数据
+   *
+   * @param uuid
+   * @return
+   */
+  @DeleteMapping(path = "/delete-imported-data/{tableName}/{uuid}")
+  public ResponseEntity<Map<String, String>> deleteImportedData(@PathVariable String tableName, @PathVariable String uuid) {
+    val status = new HashMap<String, String>();
+    try {
+      this.importLogDAO.delImportedData(tableName, uuid);
+      status.putIfAbsent("status", "success");
+    } catch (Exception e) {
+      status.putIfAbsent("error", e.getLocalizedMessage());
+      return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(status);
+    }
+    return ResponseEntity.status(OK).body(status);
+  }
+
   @Autowired
   private ExcelXmlParser excelXmlParser;
 
   @Autowired
-  private SchemaDAO schemaDAO;
+  private ImportLogDAO importLogDAO;
 
+  @Autowired
+  private SchemaDAO schemaDAO;
 
 
 }

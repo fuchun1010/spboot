@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import static java.util.logging.Level.*;
+
 import java.util.logging.Logger;
 
 /**
@@ -92,6 +93,18 @@ public class ImportLogDAO {
       e.printStackTrace();
     }
 
+  }
+
+
+  /**
+   * 按uuid删除一个已经导入的数据块
+   *
+   * @param uuid
+   */
+  public void delImportedData(@NonNull final String tableName, @NonNull final String uuid) {
+    val sql = "delete from " + tableName + " where recordFlag =? ";
+    Object[] params = {uuid};
+    this.oracleJdbcTemplate.update(sql, params);
   }
 
   private StringBuilder importLogMessage(@NonNull String creator_id) {
