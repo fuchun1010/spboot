@@ -87,7 +87,7 @@ public class ImportedController {
       this.importLogDAO.delImportedData(tableName, uuid);
       status.putIfAbsent("status", "success");
     } catch (Exception e) {
-      status.putIfAbsent("error", e.getLocalizedMessage());
+      status.putIfAbsent("status", e.getLocalizedMessage());
       return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(status);
     }
     return ResponseEntity.status(OK).body(status);

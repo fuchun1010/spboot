@@ -74,11 +74,13 @@ public class ImportLogDAO {
     val uuid = importedUnit.getUuid();
     val creator_id = importedUnit.getCreator_id();
     val desc = importedUnit.getDesc();
+    val imported_desc = importedUnit.getImported_desc();
     val request = Unirest.post(startImportLog)
         .field("table", table)
         .field("uuid", uuid)
         .field("desc", desc)
-        .field("creator_id", creator_id).getHttpRequest();
+        .field("creator_id", creator_id)
+        .field("imported_desc", imported_desc).getHttpRequest();
     val sb = this.importLogMessage(creator_id);
     try {
       val status = HttpClientHelper.request(request, StatusRes.class).getBody();
