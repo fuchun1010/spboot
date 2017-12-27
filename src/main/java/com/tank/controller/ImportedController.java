@@ -37,7 +37,7 @@ public class ImportedController {
 
   /**
    * 将数据文件导入到对应的schema文件中去
-   *
+   *curl -XPOST  -H "Content-Type: multipart/form-data" "http://localhost:8888/imported/api/import-data/1a8037ae-b9fc-4515-834e-6c11ec5eb8c3" -F "file=@/Users/fuchun/Javadone/learn/web_01/sp_bt_01/download/test.xlsx"
    * @param schemaId
    * @param file
    * @return
