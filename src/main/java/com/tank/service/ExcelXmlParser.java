@@ -41,6 +41,7 @@ public class ExcelXmlParser {
       @NonNull final String fileName,
       @NonNull final SchemaRes schemaRes) throws FileNotFoundException, DocumentException {
     val start = System.currentTimeMillis();
+    val version = this.getExcelVersion(fileName);
     System.out.println("***************************");
     System.out.println("start load sheet.xml");
     Element sheetDataNode = fetchSheetDataNode(fileName);
@@ -55,7 +56,7 @@ public class ExcelXmlParser {
     val tableName = schemaRes.getTable();
     val creator_id = Objects.isNull(schemaRes.getCreator_id()) ? "" : schemaRes.getCreator_id();
     val desc = Objects.isNull(schemaRes.getDesc()) ? "" : schemaRes.getDesc();
-    composeSqlStatement(sheetDataNode, fileName, schema, tableName, creator_id, desc);
+    composeSqlStatement(sheetDataNode, fileName, schema, tableName, creator_id, desc, version);
   }
 
   /**
@@ -81,14 +82,14 @@ public class ExcelXmlParser {
    * @param rowNode
    * @param schema
    * @param sharedStrMap
-   * @param uuidValue    每行的uuid,同一个excel中每行的uuid相同
    * @return
    * @throws FileNotFoundException
    * @throws DocumentException
    */
   private ExcelRow initExcelRow(Element rowNode,
                                 Map<Integer, String> schema,
-                                Map<Integer, String> sharedStrMap)
+                                Map<Integer, String> sharedStrMap,
+                                String version)
       throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
     ExcelRow row = new ExcelRow();
@@ -105,7 +106,7 @@ public class ExcelXmlParser {
       cell.setType(cellType);
 
 
-      if ("2013".equals(version)) {
+      if (Objects.equals("2008",version)) {
         Iterator<Element> c = node.elementIterator();
         //excel xlsx各个版本对于空格的补缺格式不一致
         if (!c.hasNext()) {
@@ -215,7 +216,8 @@ public class ExcelXmlParser {
       final Map<Integer, String> schema,
       final String tableName,
       final String creator_id,
-      final String desc
+      final String desc,
+      final String version
   ) throws FileNotFoundException, DocumentException {
     val start = System.currentTimeMillis();
     Iterator<Element> it = sheetData.elementIterator();
@@ -232,7 +234,7 @@ public class ExcelXmlParser {
     while (it.hasNext()) {
       Element item = it.next();
       val isHeaderRow = excelRows.size() == 0;
-      ExcelRow row = isHeaderRow ? headerRow(item, tableName) : initExcelRow(item, schema, shareStrMap);
+      ExcelRow row = isHeaderRow ? headerRow(item, tableName) : initExcelRow(item, schema, shareStrMap, version);
       int cellsDiffer = totalColumn - row.cellsNumber();
       //补缺乏的单元格(后面缺乏)
       if (cellsDiffer > 0) {
@@ -304,6 +306,36 @@ public class ExcelXmlParser {
     return it.next();
   }
 
+  /**
+   * @param fileName
+   * @return
+   * @throws DocumentException
+   * @throws FileNotFoundException
+   */
+  public String getExcelVersion(@NonNull String fileName) throws DocumentException, FileNotFoundException {
+    val onlyFileName = fileName.replace(".xlsx", "");
+    val subDirName = "data";
+    val realPath = DirectoryToolKit.createOrGetUpLoadPath(subDirName) + separator + onlyFileName + separator + "xl" + File.separator + "workbook.xml";
+    val file = new File(realPath);
+    SAXReader reader = new SAXReader();
+    if (!file.exists()) {
+      throw new FileNotFoundException(realPath + " not exists");
+    }
+
+    try (FileInputStream in = new FileInputStream(realPath)) {
+      Document document = reader.read(in);
+      Element root = document.getRootElement();
+      Attribute attribute = root.element("extLst").element("ext").attribute("xmlns:x15");
+      if (Objects.isNull(attribute)) {
+        return "2010";
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return "2008";
+  }
+
 
   private String absoluteSheetPath(final @NonNull String fileName) throws FileNotFoundException {
     val onlyFileName = fileName.replace(".xlsx", "");
@@ -372,9 +404,6 @@ public class ExcelXmlParser {
 
   @Value("${oracle.threshold}")
   private int threshold;
-
-  @Value("${excel.version}")
-  private String version;
 
   @Autowired
   private ImportLogDAO importLogDAO;
