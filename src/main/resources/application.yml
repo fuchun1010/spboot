@@ -12,14 +12,10 @@ oracle:
   password: fullsample
   threshold: 500
 
-excel:
-  version: 2016
-
 esAgent:
   schemaIdUrl: http://localhost:3006/excel/schema-fields/{schemaId}
   startImportLog: http://localhost:3006/start/imported-log
   endImportLogUrl: http://localhost:3006/imported/log
-
 
 spring:
   http:
