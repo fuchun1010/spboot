@@ -54,9 +54,10 @@ public class ExcelXmlParser {
     }
     val schema = schemaRes.toIndexedType();
     val tableName = schemaRes.getTable();
-    val creator_id = Objects.isNull(schemaRes.getCreator_id()) ? "" : schemaRes.getCreator_id();
+    val creator_email = Objects.isNull(schemaRes.getCreator_email()) ? "" : schemaRes.getCreator_email();
     val desc = Objects.isNull(schemaRes.getDesc()) ? "" : schemaRes.getDesc();
-    composeSqlStatement(sheetDataNode, fileName, schema, tableName, creator_id, desc, version);
+    val imported_desc = Objects.isNull(schemaRes.getImported_desc()) ? "" : schemaRes.getImported_desc();
+    composeSqlStatement(sheetDataNode, fileName, schema, tableName, desc, version, creator_email, imported_desc);
   }
 
   /**
@@ -215,9 +216,10 @@ public class ExcelXmlParser {
       final String fileName,
       final Map<Integer, String> schema,
       final String tableName,
-      final String creator_id,
       final String desc,
-      final String version
+      final String version,
+      final String creatorEmail,
+      final String imported_desc
   ) throws FileNotFoundException, DocumentException {
     val start = System.currentTimeMillis();
     Iterator<Element> it = sheetData.elementIterator();
@@ -228,7 +230,7 @@ public class ExcelXmlParser {
     val uuid = UUID.randomUUID();
     val uuidValue = uuid.toString();
     ImportedUnit startImportUnit = new ImportedUnit();
-    startImportUnit.setCreator_id(creator_id).setTableName(tableName).setUuid(uuidValue).setDesc(desc);
+    startImportUnit.setCreator_email(creatorEmail).setTableName(tableName).setUuid(uuidValue).setDesc(desc).setImported_desc(imported_desc);
     //开始导入,记录导入历史
     this.importLogDAO.startImportLog(startImportUnit);
     while (it.hasNext()) {
@@ -264,7 +266,7 @@ public class ExcelXmlParser {
     importedUnit.setOver(true)
         .setTableName(tableName)
         .setUuid(uuidValue)
-        .setCreator_id(creator_id);
+        .setCreator_email(creatorEmail);
     this.importSqlQueue.add(importedUnit);
     //清空缓存
     shareStrMap.clear();

@@ -46,14 +46,20 @@ public class ImportedController {
   @PostMapping(path = "/import-data/{schemaId}")
   public ResponseEntity<Map<String, String>> importDataFromExcel(
       @PathVariable String schemaId,
-      @RequestParam MultipartFile file
+      @RequestParam MultipartFile file,
+      @RequestParam String desc,
+      @RequestHeader(value="email") String creatorEmail
   ) {
+    if ("undefined".equalsIgnoreCase(schemaId)) {
+      throw new IllegalArgumentException("schemaid is undefined");
+    }
     val response = new HashMap<String, String>();
 
     try (ByteArrayInputStream in = new ByteArrayInputStream(file.getBytes())) {
       Optional<SchemaRes> schemaOpt = this.schemaDAO.fetchSchemaResponse(schemaId);
       if (schemaOpt.isPresent()) {
         SchemaRes schemaRes = schemaOpt.get();
+        schemaRes.setCreator_email(creatorEmail).setImported_desc(desc);
         val fileName = file.getOriginalFilename();
         val dataDir = DirectoryToolKit.createOrGetUpLoadPath("data");
         val dataFilePath = dataDir + File.separator + fileName;

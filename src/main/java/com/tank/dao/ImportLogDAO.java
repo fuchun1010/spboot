@@ -33,7 +33,7 @@ public class ImportLogDAO {
     Unirest.setObjectMapper(new JacksonObjectMapper());
     val table = importedUnit.getTableName();
     val uuid = importedUnit.getUuid();
-    val creator_id = importedUnit.getCreator_id();
+    val creator_email = importedUnit.getCreator_email();
 
     val counterSql = "select count(*) as cnt from " + table + " where recordFlag = ?";
     val parameters = new Object[]{importedUnit.getUuid()};
@@ -42,7 +42,7 @@ public class ImportLogDAO {
         .field("uuid", uuid)
         .field("count", importedNum)
         .getHttpRequest();
-    val sb = this.importLogMessage(creator_id);
+    val sb = this.importLogMessage(creator_email);
     try {
       val statusRes = HttpClientHelper.request(request, StatusRes.class).getBody();
 
@@ -72,16 +72,16 @@ public class ImportLogDAO {
     Unirest.setObjectMapper(new JacksonObjectMapper());
     val table = importedUnit.getTableName();
     val uuid = importedUnit.getUuid();
-    val creator_id = importedUnit.getCreator_id();
+    val creator_email = importedUnit.getCreator_email();
     val desc = importedUnit.getDesc();
     val imported_desc = importedUnit.getImported_desc();
     val request = Unirest.post(startImportLog)
         .field("table", table)
         .field("uuid", uuid)
         .field("desc", desc)
-        .field("creator_id", creator_id)
+        .field("creator_email", creator_email)
         .field("imported_desc", imported_desc).getHttpRequest();
-    val sb = this.importLogMessage(creator_id);
+    val sb = this.importLogMessage(creator_email);
     try {
       val status = HttpClientHelper.request(request, StatusRes.class).getBody();
       if (status.isSuccess()) {

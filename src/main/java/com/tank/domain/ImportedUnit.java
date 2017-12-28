@@ -14,7 +14,7 @@ public class ImportedUnit {
   private String tableName = null;
   private String desc = null;
   private String imported_desc = null;
-  private String creator_id = null;
+  private String creator_email = null;
   private String insertSql = null;
   private String uuid = null;
 
