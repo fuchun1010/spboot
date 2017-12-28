@@ -31,8 +31,6 @@ public class SchemaDAO {
       this.logger.log(Level.WARNING, "restful request url:" + schemaIdUrl + " no data response");
       throw new UnirestException(schemaIdUrl + " no data response");
     }
-//    SchemaRes schemaRes = new SchemaRes();
-//    schemaRes.setTypes(response.getTypes()).setTable(response.getTable()).setDesc(response.get);
     return Optional.of(response);
   }
 
