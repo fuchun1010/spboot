@@ -312,7 +312,7 @@ public class ExcelXmlParser {
    * @throws DocumentException
    * @throws FileNotFoundException
    */
-  public String getExcelVersion(@NonNull String fileName) throws DocumentException, FileNotFoundException {
+  private String getExcelVersion(@NonNull String fileName) throws DocumentException, FileNotFoundException {
     val onlyFileName = fileName.replace(".xlsx", "");
     val subDirName = "data";
     val realPath = DirectoryToolKit.createOrGetUpLoadPath(subDirName) + separator + onlyFileName + separator + "xl" + File.separator + "workbook.xml";
