@@ -68,7 +68,6 @@ public class ImportLogDAO {
    * @param importedUnit
    */
   public void startImportLog(ImportedUnit importedUnit) {
-    //TODO 还没有写方法体并且没有在需要的地方去调用
     Unirest.setObjectMapper(new JacksonObjectMapper());
     val table = importedUnit.getTableName();
     val uuid = importedUnit.getUuid();
