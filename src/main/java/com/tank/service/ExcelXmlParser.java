@@ -195,11 +195,11 @@ public class ExcelXmlParser {
       ExcelRow header = excelRows.get(0);
       excelRows.clear();
       excelRows.add(header);
-      try {
-        Thread.sleep(10);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+//      try {
+//        Thread.sleep(10);
+//      } catch (InterruptedException e) {
+//        e.printStackTrace();
+//      }
     }
   }
 

@@ -5,12 +5,15 @@ import com.tank.dao.ImportLogDAO;
 import com.tank.dao.SchemaDAO;
 import com.tank.message.schema.SchemaRes;
 import com.tank.service.ExcelXmlParser;
+import lombok.NonNull;
 import lombok.val;
 import net.lingala.zip4j.core.ZipFile;
+import org.dom4j.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -20,6 +23,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.springframework.http.HttpStatus.ACCEPTED;
@@ -45,17 +49,14 @@ public class ImportedController {
    * @return
    */
   @PostMapping(path = "/import-data/{schemaId}")
-  public ResponseEntity<Map<String, String>> importDataFromExcel(
-      @PathVariable String schemaId,
+  public DeferredResult<ResponseEntity<Map<String, String>>> importDataFromExcel(
+      @NonNull @PathVariable String schemaId,
       @RequestParam MultipartFile file,
       @RequestParam String desc,
       @RequestHeader(value = "email") String creatorEmail
   ) {
-    val response = new HashMap<String, String>();
-    if ("undefined".equalsIgnoreCase(schemaId)) {
-      response.putIfAbsent("error", "schemaId is undefined");
-      return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(response);
-    }
+    val response = new DeferredResult<ResponseEntity<Map<String, String>>>();
+    val status = new HashMap<String, String>(16);
 
 
     try (ByteArrayInputStream in = new ByteArrayInputStream(file.getBytes())) {
@@ -72,14 +73,29 @@ public class ImportedController {
         val unZipDir = DirectoryToolKit.createDataUnzipDir(dataFilePath);
         zipFile.extractAll(unZipDir);
 
-        this.excelXmlParser.importExcelToOracle(fileName, schemaRes);
-        response.putIfAbsent("status", "success");
+        Executors.newCachedThreadPool().execute(() -> {
+          try {
+            excelXmlParser.importExcelToOracle(fileName, schemaRes);
+          } catch (Exception e) {
+            status.putIfAbsent("error", e.getLocalizedMessage());
+            e.printStackTrace();
+            response.setResult(ResponseEntity.status(INTERNAL_SERVER_ERROR).body(status));
+          }
+        });
+
+
+        if (!response.hasResult()) {
+          status.putIfAbsent("status", "success");
+          response.setResult(ResponseEntity.status(ACCEPTED).body(status));
+        }
       }
-      return ResponseEntity.status(ACCEPTED).body(response);
+
+      return response;
     } catch (Exception e) {
-      response.putIfAbsent("error", e.getLocalizedMessage());
+      status.putIfAbsent("error", e.getLocalizedMessage());
       e.printStackTrace();
-      return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(response);
+      response.setResult(ResponseEntity.status(INTERNAL_SERVER_ERROR).body(status));
+      return response;
     }
   }
 
@@ -92,7 +108,7 @@ public class ImportedController {
    */
   @DeleteMapping(path = "/delete-imported-data/{tableName}/{uuid}")
   public ResponseEntity<Map<String, String>> deleteImportedData(@PathVariable String tableName, @PathVariable String uuid) {
-    val status = new HashMap<String, String>();
+    val status = new HashMap<String, String>(16);
     try {
       this.importLogDAO.delImportedData(tableName, uuid);
       status.putIfAbsent("status", "success");
