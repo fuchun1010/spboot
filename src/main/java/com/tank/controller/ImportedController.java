@@ -119,7 +119,6 @@ public class ImportedController {
     return ResponseEntity.status(OK).body(status);
   }
 
-
   @Autowired
   private ExcelXmlParser excelXmlParser;
 
@@ -128,6 +127,5 @@ public class ImportedController {
 
   @Autowired
   private SchemaDAO schemaDAO;
-
 
 }
