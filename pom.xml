@@ -77,6 +77,35 @@
                 </configuration>
             </plugin>
 
+            <!--assembly -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <!-- get all project dependencies -->
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <!-- MainClass in mainfest make a executable jar -->
+                    <archive>
+                        <manifest>
+                            <mainClass>com.tank.App</mainClass>
+                        </manifest>
+                    </archive>
+
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <!-- bind to the packaging phase -->
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!---spring boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -156,12 +185,12 @@
         </dependency>
 
         <!-- oracle driver -->
+        <!--mvn install:install-file -Dfile=/Users/fuchun/Javadone/oracle-driver/ojdbc6.jar -DgroupId=com.oracle \
+-DartifactId=oracle -Dversion=11.2.0.3 -Dpackaging=jar -DgeneratePom=true -->
         <dependency>
             <groupId>com.oracle</groupId>
-            <artifactId>ojdbc</artifactId>
-            <version>14</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/ojdbc6.jar</systemPath>
+            <artifactId>oracle</artifactId>
+            <version>11.2.0.3</version>
         </dependency>
 
         <!--guava  -->
