@@ -8,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.concurrent.BlockingQueue;
@@ -41,7 +42,13 @@ public class App {
           if (importedUnit.isOver()) {
             importLogDAO.endImportedLog(importedUnit);
           } else {
-            jdbcTemplate.execute(importedUnit.getInsertSql());
+            try {
+              jdbcTemplate.execute(importedUnit.getInsertSql());
+            }catch(DataAccessException e) {
+              e.printStackTrace();
+              //TODO call api
+            }
+
           }
 
           System.out.println("inserted ok");
