@@ -46,7 +46,9 @@ public class App {
               jdbcTemplate.execute(importedUnit.getInsertSql());
               System.out.println("inserted ok");
             }catch(DataAccessException e) {
+              importLogDAO.importFailed(importedUnit, e.getLocalizedMessage());
               e.printStackTrace();
+              System.out.println(e.getLocalizedMessage());
               //TODO call api
             }
           }

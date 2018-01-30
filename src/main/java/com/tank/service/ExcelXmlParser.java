@@ -179,7 +179,7 @@ public class ExcelXmlParser {
    *
    * @param excelRows
    */
-  private void sendExcelRowsToQueue(List<ExcelRow> excelRows) {
+  private void sendExcelRowsToQueue(List<ExcelRow> excelRows, String uuid, String creatorEmail) {
     val isNotEmpty = !Objects.isNull(excelRows) && excelRows.size() > 1;
     if (isNotEmpty) {
       //给最后一行打标记,最后一行和其他行需要拼接的内容是不一致的
@@ -190,7 +190,7 @@ public class ExcelXmlParser {
         insertSql.append(tmpRow.toString());
       }
       ImportedUnit importedUnit = new ImportedUnit();
-      importedUnit.setOver(false).setInsertSql(insertSql.toString());
+      importedUnit.setOver(false).setInsertSql(insertSql.toString()).setUuid(uuid).setCreator_email(creatorEmail);;
       this.importSqlQueue.add(importedUnit);
       ExcelRow header = excelRows.get(0);
       excelRows.clear();
@@ -256,11 +256,11 @@ public class ExcelXmlParser {
       excelRows.add(row);
       val isFull = excelRows.size() == this.threshold + 1;
       if (isFull) {
-        sendExcelRowsToQueue(excelRows);
+        sendExcelRowsToQueue(excelRows, uuidValue, creatorEmail);
       }
     }
     //可能还有剩余的数据没有处理
-    sendExcelRowsToQueue(excelRows);
+    sendExcelRowsToQueue(excelRows, uuidValue, creatorEmail);
     //加入一个结束的标志
     ImportedUnit importedUnit = new ImportedUnit();
     importedUnit.setOver(true)

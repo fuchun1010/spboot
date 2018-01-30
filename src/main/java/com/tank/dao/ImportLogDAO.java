@@ -62,6 +62,30 @@ public class ImportLogDAO {
 
   }
 
+  public void importFailed(ImportedUnit importedUnit, String failure_reason) {
+    Unirest.setObjectMapper(new JacksonObjectMapper());
+    val uuid = importedUnit.getUuid();
+    val creator_email = importedUnit.getCreator_email();
+
+    val request = Unirest.post(endImportLogUrl)
+            .field("uuid", uuid)
+            .field("failure_reason", failure_reason)
+            .getHttpRequest();
+    val sb = this.importLogMessage(creator_email);
+    try {
+      val statusRes = HttpClientHelper.request(request, StatusRes.class).getBody();
+
+      if (statusRes.isSuccess()) {
+        sb.append(" import failed write log into mysql done ");
+        logger.log(INFO, sb.toString());
+      }
+    } catch (UnirestException e) {
+      sb.append(e.getLocalizedMessage());
+      logger.log(WARNING, sb.toString());
+      e.printStackTrace();
+    }
+  }
+
 
 
   /**
