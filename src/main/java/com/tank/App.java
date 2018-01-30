@@ -1,6 +1,6 @@
 package com.tank;
 
-import com.tank.common.toolkit.DirectoryToolKit;
+import static com.tank.common.toolkit.DirectoryToolKit.*;
 import com.tank.dao.ImportLogDAO;
 import com.tank.domain.ImportedUnit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +32,9 @@ public class App {
     BlockingQueue<ImportedUnit> queue = (BlockingQueue<ImportedUnit>) context.getBean("importSqlQueue");
     JdbcTemplate jdbcTemplate = (JdbcTemplate) context.getBean("oracleJdbcTemplate");
     ImportLogDAO importLogDAO = (ImportLogDAO) context.getBean("importLog");
-    DirectoryToolKit.createOrGetUpLoadPath("data");
-    DirectoryToolKit.createOrGetUpLoadPath("schema");
-    DirectoryToolKit.createLogDir("logs");
+    createOrGetUpLoadPath("data");
+    createOrGetUpLoadPath("schema");
+    createLogDir("logs");
     Executors.newCachedThreadPool().execute(() -> {
       while (true) {
         try {
@@ -45,7 +45,7 @@ public class App {
             try {
               jdbcTemplate.execute(importedUnit.getInsertSql());
               System.out.println("inserted ok");
-            }catch(DataAccessException e) {
+            } catch (DataAccessException e) {
               importLogDAO.importFailed(importedUnit, e.getLocalizedMessage());
               e.printStackTrace();
               System.out.println(e.getLocalizedMessage());

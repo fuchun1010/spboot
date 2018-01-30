@@ -5,6 +5,9 @@ import com.mashape.unirest.http.ObjectMapper;
 
 import java.io.IOException;
 
+/**
+ * @author fuchun 
+ */
 public class JacksonObjectMapper implements ObjectMapper {
 
   private com.fasterxml.jackson.databind.ObjectMapper jacksonObjectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
