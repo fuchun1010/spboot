@@ -44,14 +44,13 @@ public class App {
           } else {
             try {
               jdbcTemplate.execute(importedUnit.getInsertSql());
+              System.out.println("inserted ok");
             }catch(DataAccessException e) {
               e.printStackTrace();
               //TODO call api
             }
-
           }
 
-          System.out.println("inserted ok");
         } catch (InterruptedException e) {
           logger.log(WARNING, " write oracle exception:" + e.getLocalizedMessage());
           e.printStackTrace();
