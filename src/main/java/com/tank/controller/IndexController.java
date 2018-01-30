@@ -1,5 +1,7 @@
 package com.tank.controller;
 
+import com.tank.domain.ImportedUnit;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * @author fuchun
@@ -35,7 +38,15 @@ public class IndexController {
     }
   }
 
+  @RequestMapping(path = "/queue", method = RequestMethod.GET)
+  public ResponseEntity<String> checkImportingQueue() {
+    val size = importSqlQueue.size();
+    return new ResponseEntity<String>("importing queue size:" + size, HttpStatus.OK);
+  }
 
   @Autowired
   private JdbcTemplate oracleJdbcTemplate;
+
+  @Autowired
+  private BlockingQueue<ImportedUnit> importSqlQueue;
 }
