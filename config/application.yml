@@ -3,6 +3,8 @@ server:
   connection-timeout: 86400000
 
 logging:
+  pattern:
+    console: "%d - %msg%n"
   path: logs
 
 oracle:

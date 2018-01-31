@@ -1,6 +1,7 @@
 package com.tank.controller;
 
 import com.tank.domain.ImportedUnit;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.concurrent.BlockingQueue;
 /**
  * @author fuchun
  */
+@Slf4j
 @CrossOrigin
 @RestController
 public class IndexController {
@@ -34,6 +36,7 @@ public class IndexController {
       return new ResponseEntity<String>("oracle connect ok", HttpStatus.OK);
     } catch (SQLException e) {
       e.printStackTrace();
+      log.error(e.getMessage());
       return new ResponseEntity<String>("oracle conn exception", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

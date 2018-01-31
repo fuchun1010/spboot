@@ -6,6 +6,7 @@ import com.tank.dao.SchemaDAO;
 import com.tank.message.schema.SchemaRes;
 import com.tank.service.ExcelXmlParser;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import net.lingala.zip4j.core.ZipFile;
 import org.dom4j.DocumentException;
@@ -35,6 +36,7 @@ import static org.springframework.http.HttpStatus.OK;
  *
  * @author fuchun
  */
+@Slf4j
 @RestController
 @CrossOrigin
 @RequestMapping(path = "/imported/api", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -75,8 +77,9 @@ public class ImportedController {
 
         Executors.newCachedThreadPool().execute(() -> {
           try {
-            excelXmlParser.importExcelToOracle(fileName, schemaRes);
+            this.excelXmlParser.importExcelToOracle(fileName, schemaRes);
           } catch (Exception e) {
+            log.error(e.getMessage());
             status.putIfAbsent("error", e.getLocalizedMessage());
             e.printStackTrace();
             response.setResult(ResponseEntity.status(INTERNAL_SERVER_ERROR).body(status));
@@ -94,6 +97,7 @@ public class ImportedController {
     } catch (Exception e) {
       status.putIfAbsent("error", e.getLocalizedMessage());
       e.printStackTrace();
+      log.error(e.getMessage());
       response.setResult(ResponseEntity.status(INTERNAL_SERVER_ERROR).body(status));
       return response;
     }
@@ -113,6 +117,7 @@ public class ImportedController {
       this.importLogDAO.delImportedData(tableName, uuid);
       status.putIfAbsent("status", "success");
     } catch (Exception e) {
+      log.error(e.getMessage());
       status.putIfAbsent("status", e.getLocalizedMessage());
       return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(status);
     }
