@@ -26,3 +26,95 @@ public class SpikeController {
     return ResponseEntity.status(HttpStatus.OK).body("spike router");
   }
 }
+
+/**
+ * curl -XPOST "http://localhost:8888/tag/" -H "Content-Type:application/json" -d '{
+ "id": "1",
+ "op": "and",
+ "name": "tag1",
+ "conditions": [
+ {
+ "field": "c1",
+ "values": [
+ 2000
+ ],
+ "compare": "gt"
+ },
+ {
+ "id": "2",
+ "op": "or",
+ "name": "tag2",
+ "conditions": [
+ {
+ "field": "c2",
+ "values": [
+ 2400
+ ],
+ "compare": "eq"
+ },
+ {
+ "field": "c3",
+ "values": [
+ 1200,
+ 2600
+ ],
+ "compare": "lt"
+ },
+ {
+ "id":3,
+ "op": "and",
+ "name": "tag3",
+ "conditions": [
+ {
+ "field": "c4",
+ "values": [
+ 2400
+ ],
+ "compare": "eq"
+ }
+ ]
+ }
+ ]
+ }
+ ]
+ }'
+ */
+
+/**
+ * curl -XPOST "http://localhost:8888/tag/" -H "Content-Type:application/json" -d '{
+ "id": "1",
+ "op": "and",
+ "name": "tag1",
+ "conditions": [
+ {
+ "field": "c1",
+ "values": [
+ 2000
+ ],
+ "compare": "gt"
+ },
+ {
+ "id": "2",
+ "op": "or",
+ "name": "tag2",
+ "conditions": [
+ {
+ "field": "c2",
+ "values": [
+ 2400
+ ],
+ "compare": "eq"
+ },
+ {
+ "field": "c3",
+ "values": [
+ 1200,
+ 2600
+ ],
+ "compare": "lt"
+ }
+ ]
+ }
+ ]
+ }'
+ */
