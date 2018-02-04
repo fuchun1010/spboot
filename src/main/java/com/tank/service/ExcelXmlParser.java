@@ -8,6 +8,7 @@ import com.tank.domain.ExcelRow;
 import com.tank.domain.ImportedUnit;
 import com.tank.message.schema.SchemaRes;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
@@ -30,6 +31,7 @@ import static java.io.File.separator;
  * @author fuchun
  */
 @Service
+@Slf4j
 public class ExcelXmlParser {
 
   /**
@@ -40,6 +42,7 @@ public class ExcelXmlParser {
   public void importExcelToOracle(
       @NonNull final String fileName,
       @NonNull final SchemaRes schemaRes) throws FileNotFoundException, DocumentException {
+
     val start = System.currentTimeMillis();
     val version = this.getExcelVersion(fileName);
     System.out.println("***************************");
@@ -48,7 +51,6 @@ public class ExcelXmlParser {
     val end = System.currentTimeMillis();
     System.out.println(" load sheet.xml cost" + (end - start));
     System.out.println("***************************");
-    System.out.println("");
     if (Objects.isNull(sheetDataNode)) {
       throw new DocumentException("sheetData node没有找到");
     }
@@ -107,7 +109,7 @@ public class ExcelXmlParser {
       cell.setType(cellType);
 
 
-      if (Objects.equals("2008",version)) {
+      if (Objects.equals("2008", version)) {
         Iterator<Element> c = node.elementIterator();
         //excel xlsx各个版本对于空格的补缺格式不一致
         if (!c.hasNext()) {
@@ -190,16 +192,11 @@ public class ExcelXmlParser {
         insertSql.append(tmpRow.toString());
       }
       ImportedUnit importedUnit = new ImportedUnit();
-      importedUnit.setOver(false).setInsertSql(insertSql.toString()).setUuid(uuid).setCreator_email(creatorEmail);;
+      importedUnit.setOver(false).setInsertSql(insertSql.toString()).setUuid(uuid).setCreator_email(creatorEmail);
       this.importSqlQueue.add(importedUnit);
       ExcelRow header = excelRows.get(0);
       excelRows.clear();
       excelRows.add(header);
-//      try {
-//        Thread.sleep(10);
-//      } catch (InterruptedException e) {
-//        e.printStackTrace();
-//      }
     }
   }
 
@@ -318,6 +315,7 @@ public class ExcelXmlParser {
     val onlyFileName = fileName.replace(".xlsx", "");
     val subDirName = "data";
     val realPath = DirectoryToolKit.createOrGetUpLoadPath(subDirName) + separator + onlyFileName + separator + "xl" + File.separator + "workbook.xml";
+    log.info("extract version from:" + realPath);
     val file = new File(realPath);
     SAXReader reader = new SAXReader();
     if (!file.exists()) {
@@ -329,12 +327,14 @@ public class ExcelXmlParser {
       Element root = document.getRootElement();
       Attribute attribute = root.element("extLst").element("ext").attribute("xmlns:x15");
       if (Objects.isNull(attribute)) {
+        log.info("fileName" + " version is:2010");
         return "2010";
       }
     } catch (Exception e) {
+      log.error("extract excel version exception:" + e.getMessage());
       e.printStackTrace();
     }
-
+    log.info("fileName" + " version is:2008");
     return "2008";
   }
 
@@ -375,19 +375,18 @@ public class ExcelXmlParser {
    * @throws DocumentException
    */
   private Map<Integer, String> sharedStrMapped(final @NonNull String fileName) throws FileNotFoundException, DocumentException {
-    Map<Integer, String> mapped = new HashMap<>();
+    Map<Integer, String> mapped = new HashMap<>(16);
     val path = this.absoluteSharedStringsPath(fileName);
     if (!new File(path).exists()) {
       throw new FileNotFoundException(fileName + " not exists");
     }
     val reader = new SAXReader();
     val start = System.currentTimeMillis();
-    System.out.println("-------load str content xml------");
+    log.info("-------load str content xml------");
     val document = reader.read(new File(path));
     val root = document.getRootElement();
     val end = System.currentTimeMillis();
-    System.out.println("load str content xml cost:" + (end - start));
-    System.out.println("");
+    log.info("load str content xml cost:" + (end - start));
     int index = 0;
     Iterator<Element> children = root.elementIterator();
     while (children.hasNext()) {
