@@ -108,6 +108,7 @@ public class ImportLogDAO {
         .field("imported_desc", imported_desc).getHttpRequest();
     val sb = this.importLogMessage(creator_email);
     try {
+      //TODO,不需要再调用es-agent这边了
       val status = HttpClientHelper.request(request, StatusRes.class).getBody();
       if (status.isSuccess()) {
         sb.append(" success start import data");
