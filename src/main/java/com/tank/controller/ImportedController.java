@@ -55,7 +55,7 @@ public class ImportedController {
       @NonNull @PathVariable String schemaId,
       @RequestParam MultipartFile file,
       @RequestParam String desc,
-      @RequestHeader(value = "email") String creatorEmail
+      @RequestHeader(value = "email") String uploaderEmail
   ) {
     val response = new DeferredResult<ResponseEntity<Map<String, String>>>();
     val status = new HashMap<String, String>(16);
@@ -65,7 +65,7 @@ public class ImportedController {
       Optional<SchemaRes> schemaOpt = this.schemaDAO.fetchSchemaResponse(schemaId);
       if (schemaOpt.isPresent()) {
         SchemaRes schemaRes = schemaOpt.get();
-        schemaRes.setCreator_email(creatorEmail).setImported_desc(desc);
+        schemaRes.setCreator_email(uploaderEmail).setImported_desc(desc);
         val fileName = file.getOriginalFilename();
         val dataDir = DirectoryToolKit.createOrGetUpLoadPath("data");
         val dataFilePath = dataDir + File.separator + fileName;

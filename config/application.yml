@@ -15,9 +15,9 @@ oracle:
   threshold: 10
 
 esAgent:
-  schemaIdUrl: http://localhost:3006/excel/schema-fields/{schemaId}
-  startImportLog: http://localhost:3006/start/imported-log
-  endImportLogUrl: http://localhost:3006/imported/log
+  schemaIdUrl: http://localhost/es-agent/excel/schema-fields/{schemaId}
+  startImportLog: http://localhost/es-agent/start/imported-log
+  endImportLogUrl: http://localhost/es-agent/imported/log
 
 spring:
   http:
