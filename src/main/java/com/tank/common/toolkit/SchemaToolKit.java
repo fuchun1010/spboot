@@ -1,5 +1,7 @@
 package com.tank.common.toolkit;
 
+
+import com.tank.message.schema.DeleteTableData;
 import lombok.NonNull;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -17,6 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+import java.lang.String;
+
+
 /**
  * @author fuchun
  */
@@ -26,6 +31,30 @@ public class SchemaToolKit {
 
     public void createSchema(@NonNull String schemaSql) throws DataAccessException {
         this.oracleJdbcTemplate.execute(schemaSql);
+    }
+
+    /**
+     * 删除表里面的数据
+     * XYC
+     * @param  tableData
+     * @throws DataAccessException
+     */
+    public void deleteSchema(@NonNull DeleteTableData tableData) throws DataAccessException{
+//            val sql = "delete from " + tableName + " where recordFlag =? ";
+//            Object[] params = {uuid};
+//            this.oracleJdbcTemplate.update(sql, params);
+//        tableData.getRecordFlag();
+//        tableData.getTableName();
+        String tableName = tableData.getTableName();
+        String recordFlag = tableData.getRecordFlag();
+        try {
+            String sql = "delete from " + tableName + " where recordFlag = ? ";
+            Object[] params = {recordFlag};
+            this.oracleJdbcTemplate.update(sql,params);
+        }catch(DataAccessException e){
+            e.printStackTrace();
+        }
+
     }
 
     public Optional<List<List<String>>> getSchemaData(String filePath) {

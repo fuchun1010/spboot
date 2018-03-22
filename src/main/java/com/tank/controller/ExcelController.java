@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.tank.common.toolkit.SchemaToolKit;
 import com.tank.domain.FieldsInfo;
 import com.tank.message.schema.TableCreator;
+import com.tank.message.schema.DeleteTableData;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +68,32 @@ public class ExcelController {
             status.putIfAbsent("error", e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
         }
+    }
+
+    /**
+     *  删除表数据
+     * @param
+     * @return
+     */
+
+    @DeleteMapping(
+           path = "/drop-table-data",
+           produces = APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Map<String, String>> deleteTable(@RequestBody DeleteTableData tableData) {
+//    public ResponseEntity<Map<String, String>> deleteTable(@RequestBody String recordFlag, @RequestBody String tableName) {
+        //val status = new HashMap<String, String>(16);
+        val status = new HashMap<String, String>(16);
+        try{
+            //this.schemaToolKit.deleteSchema(tableData.getRecordFlag());
+            this.schemaToolKit.deleteSchema(tableData);
+            status.putIfAbsent("success","200");
+            return ResponseEntity.status(HttpStatus.OK).body(status);
+         } catch (DataAccessException e) {
+            log.error(e.getMessage());
+            status.putIfAbsent("error", e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
+       }
     }
 
     @Autowired
