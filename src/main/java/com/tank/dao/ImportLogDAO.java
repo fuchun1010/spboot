@@ -93,7 +93,10 @@ public class ImportLogDAO {
    *
    * @param importedUnit
    */
+  //TODO 创建写入日志不需要再调用nodejs了，直接写入到oracle
   public void startImportLog(ImportedUnit importedUnit) {
+    //TODO
+    // this.oracleJdbcTemplate.execute("");
     Unirest.setObjectMapper(new JacksonObjectMapper());
     val table = importedUnit.getTableName();
     val uuid = importedUnit.getUuid();
