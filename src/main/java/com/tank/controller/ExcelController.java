@@ -14,10 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static com.tank.common.toolkit.DirectoryToolKit.uploadFileAndGetPath;
@@ -70,8 +67,25 @@ public class ExcelController {
         }
     }
 
+    @GetMapping(
+            path = "/preview-data/{tableName}/{recordFlag}",
+            produces = APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<List<List<String>>> PreviewExcel(@PathVariable String tableName, @PathVariable String recordFlag){
+        val status = new ArrayList<List<String>>();
+        try{
+            List<List<String>> list = this.schemaToolKit.preViewExcel(tableName, recordFlag);
+            return ResponseEntity.status(HttpStatus.OK).body(list);
+        } catch (DataAccessException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
+        }
+    }
+
+
     /**
      *  删除表数据
+     *  @author XYC
      * @param
      * @return
      */
@@ -81,11 +95,8 @@ public class ExcelController {
            produces = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Map<String, String>> deleteTable(@RequestBody DeleteTableData tableData) {
-//    public ResponseEntity<Map<String, String>> deleteTable(@RequestBody String recordFlag, @RequestBody String tableName) {
-        //val status = new HashMap<String, String>(16);
         val status = new HashMap<String, String>(16);
         try{
-            //this.schemaToolKit.deleteSchema(tableData.getRecordFlag());
             this.schemaToolKit.deleteSchema(tableData);
             status.putIfAbsent("success","200");
             return ResponseEntity.status(HttpStatus.OK).body(status);
