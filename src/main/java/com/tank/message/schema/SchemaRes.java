@@ -15,6 +15,7 @@ import java.util.Map;
 public class SchemaRes {
   private String table;
   private String creator_email;
+  private String uploader_email;
   private String imported_desc;
   private String desc;
   private List<SchemaItem> types;
