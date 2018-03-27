@@ -57,9 +57,10 @@ public class ExcelXmlParser {
     val schema = schemaRes.toIndexedType();
     val tableName = schemaRes.getTable();
     val creator_email = Objects.isNull(schemaRes.getCreator_email()) ? "" : schemaRes.getCreator_email();
+    val uploader_email = Objects.isNull(schemaRes.getUploader_email()) ? "" : schemaRes.getUploader_email();
     val desc = Objects.isNull(schemaRes.getDesc()) ? "" : schemaRes.getDesc();
     val imported_desc = Objects.isNull(schemaRes.getImported_desc()) ? "" : schemaRes.getImported_desc();
-    composeSqlStatement(sheetDataNode, fileName, schema, tableName, desc, version, creator_email, imported_desc);
+    composeSqlStatement(sheetDataNode, fileName, schema, tableName, desc, version, creator_email, uploader_email, imported_desc);
   }
 
   /**
@@ -216,6 +217,7 @@ public class ExcelXmlParser {
       final String desc,
       final String version,
       final String creatorEmail,
+      final String uploaderEmail,
       final String imported_desc
   ) throws FileNotFoundException, DocumentException {
     val start = System.currentTimeMillis();
@@ -263,7 +265,8 @@ public class ExcelXmlParser {
     importedUnit.setOver(true)
         .setTableName(tableName)
         .setUuid(uuidValue)
-        .setCreator_email(creatorEmail);
+        .setCreator_email(creatorEmail)
+        .setUploader_email(uploaderEmail);
     this.importSqlQueue.add(importedUnit);
     //清空缓存
     shareStrMap.clear();

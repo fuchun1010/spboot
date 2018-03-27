@@ -17,5 +17,6 @@ public class ImportedUnit {
   private String creator_email = null;
   private String insertSql = null;
   private String uuid = null;
+  private String uploader_email = null;
 
 }
