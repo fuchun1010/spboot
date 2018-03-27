@@ -10,11 +10,18 @@ import lombok.NonNull;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
 
 import static java.util.logging.Level.*;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -34,28 +41,26 @@ public class ImportLogDAO {
     val table = importedUnit.getTableName();
     val uuid = importedUnit.getUuid();
     val creator_email = importedUnit.getCreator_email();
-
+    val end_time = new Date().getTime();
+    val imported_status = "success";
     val counterSql = "select count(*) as cnt from " + table + " where recordFlag = ?";
     val parameters = new Object[]{importedUnit.getUuid()};
     Integer importedNum = this.oracleJdbcTemplate.queryForObject(counterSql, parameters, (rs, rowNum) -> rs.getInt("cnt"));
     //TODO
-    //不用调用nodejs，直接更新oracle关于这条record_flag=uuid的记录
-    val request = Unirest.post(endImportLogUrl)
-        .field("uuid", uuid)
-        .field("count", importedNum)
-        .getHttpRequest();
     val sb = this.importLogMessage(creator_email);
     try {
-      val statusRes = HttpClientHelper.request(request, StatusRes.class).getBody();
+        val sql = "update FSAMPLE_IMPORTING_LOGS SET imported_status = ?,end_ts = ? where record_flag = ?";
+        Object[] params = new Object[]{imported_status,end_time,uuid};
+        val statusSql =  this.oracleJdbcTemplate.update(sql,params);
 
-      if (statusRes.isSuccess()) {
-        sb.append(" success imported ");
-        sb.append(importedNum);
-        sb.append(" records");
-        logger.log(INFO, sb.toString());
+        if (statusSql == 1) {
+           sb.append(" success imported ");
+           sb.append(importedNum);
+           sb.append(" records");
+           logger.log(INFO, sb.toString());
       }
 
-    } catch (UnirestException e) {
+    } catch (Exception e) {
       sb.append(" end imported exception:---->");
       sb.append(e.getLocalizedMessage());
       logger.log(WARNING, sb.toString());
@@ -98,34 +103,29 @@ public class ImportLogDAO {
   //TODO 创建写入日志不需要再调用nodejs了，直接写入到oracle
   public void startImportLog(ImportedUnit importedUnit) {
     //TODO
-    // this.oracleJdbcTemplate.execute("");
     Unirest.setObjectMapper(new JacksonObjectMapper());
-    val table = importedUnit.getTableName();
-    val uuid = importedUnit.getUuid();
-    val creator_email = importedUnit.getCreator_email();
+    val tableName = importedUnit.getTableName();
     val desc = importedUnit.getDesc();
+    val creator_email = importedUnit.getCreator_email();
+    val uploader_email = importedUnit.getUploader_email();
+    val imported_time = new Date().getTime();
+    val uuid = importedUnit.getUuid();
+    val imported_status = "appending";
     val imported_desc = importedUnit.getImported_desc();
-    val request = Unirest.post(startImportLog)
-        .field("table", table)
-        .field("uuid", uuid)
-        .field("desc", desc)
-        .field("creator_email", creator_email)
-        .field("imported_desc", imported_desc).getHttpRequest();
-    val sb = this.importLogMessage(creator_email);
-    try {
-      //TODO,不需要再调用es-agent这边了
-      val status = HttpClientHelper.request(request, StatusRes.class).getBody();
-      if (status.isSuccess()) {
-        sb.append(" success start import data");
-        logger.log(INFO, sb.toString());
-      }
-    } catch (UnirestException e) {
-      sb.append(" start import exception:---->");
-      sb.append(e.getLocalizedMessage());
-      logger.log(WARNING, sb.toString());
-      e.printStackTrace();
-    }
+    val visible = 1;
 
+    val sql = "insert into FSAMPLE_IMPORTING_LOGS(imported_table_name,table_desc,creator_email,imported_by_email,imported_time," +
+              "record_flag,imported_status,imported_desc,visible) " +
+              "values ( ? , ? , ? , ? , ? , ? , ? , ? , ?) ";
+    try {
+      Object[] params = new Object[]{
+              tableName,desc,creator_email,
+              uploader_email,imported_time,uuid,
+              imported_status,imported_desc,visible};
+      this.oracleJdbcTemplate.update(sql,params);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
   }
 
 

@@ -229,7 +229,10 @@ public class ExcelXmlParser {
     val uuid = UUID.randomUUID();
     val uuidValue = uuid.toString();
     ImportedUnit startImportUnit = new ImportedUnit();
-    startImportUnit.setCreator_email(creatorEmail).setTableName(tableName).setUuid(uuidValue).setDesc(desc).setImported_desc(imported_desc);
+    startImportUnit
+            .setUploader_email(uploaderEmail)
+            .setCreator_email(creatorEmail)
+            .setTableName(tableName).setUuid(uuidValue).setDesc(desc).setImported_desc(imported_desc);
     //开始导入,记录导入历史
     this.importLogDAO.startImportLog(startImportUnit);
     while (it.hasNext()) {
