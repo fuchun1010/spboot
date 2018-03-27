@@ -38,6 +38,8 @@ public class ImportLogDAO {
     val counterSql = "select count(*) as cnt from " + table + " where recordFlag = ?";
     val parameters = new Object[]{importedUnit.getUuid()};
     Integer importedNum = this.oracleJdbcTemplate.queryForObject(counterSql, parameters, (rs, rowNum) -> rs.getInt("cnt"));
+    //TODO
+    //不用调用nodejs，直接更新oracle关于这条record_flag=uuid的记录
     val request = Unirest.post(endImportLogUrl)
         .field("uuid", uuid)
         .field("count", importedNum)
