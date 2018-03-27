@@ -67,6 +67,9 @@ public class ExcelController {
         }
     }
 
+
+
+
     @GetMapping(
             path = "/preview-data/{tableName}/{recordFlag}",
             produces = APPLICATION_JSON_VALUE
@@ -105,6 +108,29 @@ public class ExcelController {
             status.putIfAbsent("error", e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
        }
+    }
+
+    /**
+     *  获取表名上传历史信息  fsample_importing_logs
+     * @param tableName
+     * @author XYC
+     * @return
+     */
+    @GetMapping(
+            path = "/preview-imported-logs/{tableName}",
+            produces = APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<List<Map<String,String>>> importedPreviewInfo(@PathVariable String tableName) {
+        val status = new ArrayList<Map<String,String>>();
+        try{
+            List<Map<String,String>> list = this.schemaToolKit.importedPreviewInfo(tableName);
+            return ResponseEntity.status(HttpStatus.OK).body(list);
+        } catch (DataAccessException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
+
+        }
+
     }
 
     @Autowired

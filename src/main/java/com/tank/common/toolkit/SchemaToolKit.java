@@ -10,6 +10,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.xmlbeans.impl.xb.xmlconfig.Qnametargetlist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,6 +19,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
 
 
+import javax.swing.text.Keymap;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -98,6 +100,48 @@ public class SchemaToolKit {
         }
         return null;
     }
+
+    /**
+     *  获取表名上传历史信息  fsample_importing_logs
+     * @param tableName
+     * @author XYC
+     * @return
+     */
+    public List<Map<String,String>> importedPreviewInfo(@NonNull String tableName) throws DataAccessException{
+
+        try {
+            Object[] params = new Object[]{tableName};
+            Object list = this.oracleJdbcTemplate.query(
+                    " select fil.IMPORTED_TABLE_NAME,fil.imported_desc,fil.imported_status,fil.imported_by_email,fil.IMPORTED_TIME " +
+                            "from FSAMPLE_IMPORTING_LOGS fil where imported_table_name = ? and visible = 1 ",
+                    params,
+                    new ResultSetExtractor<Object>() {
+                public List extractData(ResultSet rs) throws SQLException, DataAccessException {
+                    ResultSetMetaData data = rs.getMetaData();
+                    List<Map<String, String>> list = new ArrayList<>();
+                    while (rs.next()) {
+                        Map<String, String> map = new HashMap<>();
+                        for (int i = 1; i <= data.getColumnCount(); i++) {
+                            String keyName = data.getColumnName(i);
+                            String valueName = rs.getString(keyName);
+                            map.put(keyName, valueName);
+                        }
+                        list.add(map);
+                    }
+                    return list;
+                }
+
+            });
+            List<Map<String,String>> rows = (List<Map<String,String>>)list;
+            return rows;
+
+        }catch(DataAccessException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
 
     public Optional<List<List<String>>> getSchemaData(String filePath) {
         Workbook wb;
