@@ -58,6 +58,7 @@ public class SchemaToolKit {
             String sql = "delete from " + tableName + " where recordFlag = ? ";
             Object[] params = {recordFlag};
             this.oracleJdbcTemplate.update(sql,params);
+            this.oracleJdbcTemplate.update("update FSAMPLE_IMPORTING_LOGS set visible=0 where record_flag = ?", params);
         }catch(DataAccessException e){
             e.printStackTrace();
         }
@@ -116,7 +117,7 @@ public class SchemaToolKit {
         try {
             Object[] params = new Object[]{tableName};
             Object list = this.oracleJdbcTemplate.query(
-                    " select fil.IMPORTED_TABLE_NAME,fil.imported_desc,fil.imported_status,fil.imported_by_email,fil.IMPORTED_TIME " +
+                    " select fil.RECORD_FLAG, fil.IMPORTED_TABLE_NAME,fil.imported_desc,fil.imported_status,fil.imported_by_email,fil.IMPORTED_TIME " +
                             "from FSAMPLE_IMPORTING_LOGS fil where imported_table_name = ? and visible = 1 ",
                     params,
                     new ResultSetExtractor<Object>() {
@@ -128,7 +129,7 @@ public class SchemaToolKit {
                         for (int i = 1; i <= data.getColumnCount(); i++) {
                             String keyName = data.getColumnName(i);
                             String valueName = rs.getString(keyName);
-                            map.put(keyName, valueName);
+                            map.put(keyName.toLowerCase(), valueName);
                         }
                         list.add(map);
                     }
