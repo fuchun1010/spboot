@@ -3,6 +3,7 @@ package com.tank.controller;
 import com.google.common.base.Strings;
 import com.tank.common.toolkit.SchemaToolKit;
 import com.tank.domain.FieldsInfo;
+import com.tank.message.schema.DropTableField;
 import com.tank.message.schema.TableCreator;
 import com.tank.message.schema.DeleteTableData;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +69,24 @@ public class ExcelController {
     }
 
 
-
+    @DeleteMapping(
+            path = "/drop/table-field",
+            produces = APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Map<String, String>> dropTableField(@RequestBody DropTableField dropTableFieldClz) {
+        val tableName = dropTableFieldClz.getTableName();
+        val field = dropTableFieldClz.getField();
+        val status = new HashMap<String, String>(16);
+        try {
+            this.schemaToolKit.dropTableField(tableName, field);
+            status.putIfAbsent("success", "drop field successfully");
+            return ResponseEntity.status(HttpStatus.OK).body(status);
+        } catch (DataAccessException e) {
+            log.error(e.getMessage());
+            status.putIfAbsent("error", e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
+        }
+    }
 
     @GetMapping(
             path = "/preview-data/{tableName}/{recordFlag}",

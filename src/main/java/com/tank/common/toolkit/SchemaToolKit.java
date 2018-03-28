@@ -64,6 +64,10 @@ public class SchemaToolKit {
 
     }
 
+    public void dropTableField(@NonNull String tableName, @NonNull String field) throws DataAccessException{
+        this.oracleJdbcTemplate.execute("alter table " + tableName +  " drop column " + field);
+    }
+
     /**
      * 表格  查询数据
      * @throws DataAccessException
