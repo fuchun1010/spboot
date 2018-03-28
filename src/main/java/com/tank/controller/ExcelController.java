@@ -4,6 +4,8 @@ import com.google.common.base.Strings;
 import com.tank.common.toolkit.SchemaToolKit;
 import com.tank.domain.FieldsInfo;
 import com.tank.message.schema.DropTableField;
+import com.tank.domain.PreviewTable;
+import com.tank.message.schema.PreviewTableData;
 import com.tank.message.schema.TableCreator;
 import com.tank.message.schema.DeleteTableData;
 import lombok.extern.slf4j.Slf4j;
@@ -150,6 +152,24 @@ public class ExcelController {
         }
 
     }
+
+    @PostMapping(
+            path = "/preview-tables-status",
+            produces = APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<List<PreviewTable>> previewTablesStatus(@RequestBody PreviewTableData previewtabledata) {
+
+        try{
+            List<PreviewTable> list = this.schemaToolKit.previewTablesStatus(previewtabledata);
+            return ResponseEntity.status(HttpStatus.OK).body(list);
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<PreviewTable>());
+        }
+    }
+
+
 
     @Autowired
     private SchemaToolKit schemaToolKit;

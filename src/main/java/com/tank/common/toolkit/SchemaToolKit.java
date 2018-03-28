@@ -1,35 +1,32 @@
 package com.tank.common.toolkit;
 
 
+import com.tank.domain.PreviewTable;
 import com.tank.message.schema.DeleteTableData;
-
+import com.tank.message.schema.PreviewTableData;
 import lombok.NonNull;
+import lombok.val;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.xmlbeans.impl.xb.xmlconfig.Qnametargetlist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
-
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
-
-import javax.swing.text.Keymap;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
-import java.lang.String;
 
 
 /**
@@ -46,11 +43,12 @@ public class SchemaToolKit {
 
     /**
      * 删除表里面的数据
-     * @author XYC
-     * @param  tableData
+     *
+     * @param tableData
      * @throws DataAccessException
+     * @author XYC
      */
-    public void deleteSchema(@NonNull DeleteTableData tableData) throws DataAccessException{
+    public void deleteSchema(@NonNull DeleteTableData tableData) throws DataAccessException {
 
         String tableName = tableData.getTableName();
         String recordFlag = tableData.getRecordFlag();
@@ -71,59 +69,56 @@ public class SchemaToolKit {
 
     /**
      * 表格  查询数据
+     *
      * @throws DataAccessException
      */
-    public List<List<String>> preViewExcel(@NonNull String tableName, @NonNull String recordFlag) throws DataAccessException{
+    public List<List<String>> preViewExcel(@NonNull String tableName, @NonNull String recordFlag) throws DataAccessException {
 
         try {
             Object[] params = new Object[]{recordFlag};
             Object list = this.oracleJdbcTemplate.query("select * from " + tableName + " where recordFlag = ? ", params, new ResultSetExtractor<Object>() {
-                  public List extractData(ResultSet rs) throws SQLException, DataAccessException {
-                      ResultSetMetaData data = rs.getMetaData();
-                      List<List<String>> list = new ArrayList<>();
-                      List<String> list1 = new ArrayList<>();
-                      for (int i=1; i<=data.getColumnCount(); i++){
-                          String columnName = data.getColumnName(i);
-                          list1.add(columnName);
-                      }
-                      list.add(list1);
-                      while(rs.next()) {
-                          List<String> list2 = new ArrayList<>();
-                          for (int i = 1; i<=data.getColumnCount(); i++){
-                              String columnValue = rs.getObject(i).toString();
-                              list2.add(columnValue);
-                          }
-                          list.add(list2);
-                      }
-                      return list;
-                  }
+                public List extractData(ResultSet rs) throws SQLException, DataAccessException {
+                    ResultSetMetaData data = rs.getMetaData();
+                    List<List<String>> list = new ArrayList<>();
+                    List<String> list1 = new ArrayList<>();
+                    for (int i = 1; i <= data.getColumnCount(); i++) {
+                        String columnName = data.getColumnName(i);
+                        list1.add(columnName);
+                    }
+                    list.add(list1);
+                    while (rs.next()) {
+                        List<String> list2 = new ArrayList<>();
+                        for (int i = 1; i <= data.getColumnCount(); i++) {
+                            String columnValue = rs.getObject(i).toString();
+                            list2.add(columnValue);
+                        }
+                        list.add(list2);
+                    }
+                    return list;
+                }
             });
-            List<List<String>> rows = (List<List<String>>)list;
+            List<List<String>> rows = (List<List<String>>) list;
             return rows;
-        }catch(DataAccessException e){
+        } catch (DataAccessException e) {
             e.printStackTrace();
         }
         return null;
     }
 
     /**
-     *  获取表名上传历史信息  fsample_importing_logs
+     * 获取表名上传历史信息  fsample_importing_logs
+     *
      * @param tableName
-     * @author XYC
      * @return
+     * @author XYC
      */
-    public List<Map<String,String>> importedPreviewInfo(@NonNull String tableName) throws DataAccessException{
-
-        try {
-            Object[] params = new Object[]{tableName};
-            Object list = this.oracleJdbcTemplate.query(
-                    " select fil.RECORD_FLAG, fil.IMPORTED_TABLE_NAME,fil.imported_desc,fil.imported_status,fil.imported_by_email,fil.IMPORTED_TIME " +
-                            "from FSAMPLE_IMPORTING_LOGS fil where imported_table_name = ? and visible = 1 ",
-                    params,
-                    new ResultSetExtractor<Object>() {
-                public List extractData(ResultSet rs) throws SQLException, DataAccessException {
+    public List<Map<String, String>> importedPreviewInfo(@NonNull String tableName) throws DataAccessException {
+        Object[] params = new Object[]{tableName};
+        Object list = this.oracleJdbcTemplate.query(" select fil.RECORD_FLAG, fil.IMPORTED_TABLE_NAME,fil.imported_desc,fil.imported_status,fil.imported_by_email,fil.IMPORTED_TIME " +
+                "from FSAMPLE_IMPORTING_LOGS fil where imported_table_name = ? and visible = 1 ",
+                params, (rs) -> {
                     ResultSetMetaData data = rs.getMetaData();
-                    List<Map<String, String>> list = new ArrayList<>();
+                    List<Map<String, String>> list1 = new ArrayList<>();
                     while (rs.next()) {
                         Map<String, String> map = new HashMap<>();
                         for (int i = 1; i <= data.getColumnCount(); i++) {
@@ -131,21 +126,43 @@ public class SchemaToolKit {
                             String valueName = rs.getString(keyName);
                             map.put(keyName.toLowerCase(), valueName);
                         }
-                        list.add(map);
+                        list1.add(map);
                     }
-                    return list;
-                }
-
-            });
-            List<Map<String,String>> rows = (List<Map<String,String>>)list;
-            return rows;
-
-        }catch(DataAccessException e){
-            e.printStackTrace();
-        }
-        return null;
+                    return list1;
+                });
+        List<Map<String, String>> rows = (List<Map<String, String>>) list;
+        return rows;
     }
 
+    /**
+     * 获取指定的数据记录  preview-tables-status
+     *
+     * @param  previewtabledata
+     * @return
+     * @author XYC
+     */
+    public List<PreviewTable> previewTablesStatus(@NonNull PreviewTableData previewtabledata) throws DataAccessException {
+
+        List<String> tableNames = previewtabledata.getTableNames();
+        val sql = "select imported_table_name,imported_status,imported_by_email,imported_time from FSAMPLE_IMPORTING_LOGS  where imported_table_name in (:tablenames) and imported_time in " +
+                "(select max(imported_time) from FSAMPLE_IMPORTING_LOGS where imported_table_name in (:tablenames) " +
+                "group by imported_table_name)";
+
+        MapSqlParameterSource maps = new MapSqlParameterSource();
+        maps.addValue("tablenames", tableNames);
+        NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(this.oracleJdbcTemplate.getDataSource());
+
+        List<PreviewTable> res = template.query(sql, maps, rs -> {
+            List<PreviewTable> PreviewTables = new LinkedList<>();
+            while (rs.next()) {
+                PreviewTable previewTable = new PreviewTable(rs.getString("imported_table_name"), rs.getString("imported_status"), rs.getString("imported_by_email"), rs.getBigDecimal("imported_time"));
+                PreviewTables.add(previewTable);
+                System.out.println(PreviewTables);
+            }
+            return PreviewTables;
+        });
+        return res;
+    }
 
 
     public Optional<List<List<String>>> getSchemaData(String filePath) {
