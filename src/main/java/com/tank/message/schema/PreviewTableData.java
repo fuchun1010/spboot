@@ -8,9 +8,5 @@ import java.util.List;
 public class PreviewTableData {
 
     private List<String> tableNames;
-    //private String tableNames;
-//    private String imported_status;
-//    private String imported_by_email;
-//    private String imported_time;
 
 }
