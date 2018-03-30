@@ -81,16 +81,26 @@ public class SchemaToolKit {
                     ResultSetMetaData data = rs.getMetaData();
                     List<List<String>> list = new ArrayList<>();
                     List<String> list1 = new ArrayList<>();
+                    int recordFlagIndex = -1;
                     for (int i = 1; i <= data.getColumnCount(); i++) {
                         String columnName = data.getColumnName(i);
-                        list1.add(columnName);
+                        if ("RECORDFLAG".equalsIgnoreCase(columnName)) {
+                            recordFlagIndex = i;
+                        } else {
+                            list1.add(columnName);
+                        }
+
                     }
                     list.add(list1);
                     while (rs.next()) {
                         List<String> list2 = new ArrayList<>();
                         for (int i = 1; i <= data.getColumnCount(); i++) {
+                            if (recordFlagIndex > 0 && i == recordFlagIndex) {
+                                continue;
+                            }
                             String columnValue = rs.getObject(i).toString();
                             list2.add(columnValue);
+
                         }
                         list.add(list2);
                     }
