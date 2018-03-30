@@ -117,10 +117,12 @@ public class ExcelController {
            path = "/drop-table-data",
            produces = APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Map<String, String>> deleteTable(@RequestBody DeleteTableData tableData) {
+    public ResponseEntity<Map<String, String>> deleteTable(@RequestBody DeleteTableData tableData,
+             @RequestHeader(value = "email") String email) {
         val status = new HashMap<String, String>(16);
         try{
             this.schemaToolKit.deleteSchema(tableData);
+            log.info("###> deleteSchema ==> by email: " + email + " , tableName: " + tableData.getTableName() + " , recordFlag: " + tableData.getRecordFlag());
             status.putIfAbsent("success","200");
             return ResponseEntity.status(HttpStatus.OK).body(status);
          } catch (DataAccessException e) {
