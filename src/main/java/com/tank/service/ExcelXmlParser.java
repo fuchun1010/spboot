@@ -235,7 +235,9 @@ public class ExcelXmlParser {
             .setTableName(tableName).setUuid(uuidValue).setDesc(desc).setImported_desc(imported_desc);
     //开始导入,记录导入历史
     this.importLogDAO.startImportLog(startImportUnit);
+    int rowCount = 0;
     while (it.hasNext()) {
+      ++rowCount;
       Element item = it.next();
       val isHeaderRow = excelRows.size() == 0;
       ExcelRow row = isHeaderRow ? headerRow(item, tableName) : initExcelRow(item, schema, shareStrMap, version);
@@ -261,6 +263,7 @@ public class ExcelXmlParser {
         sendExcelRowsToQueue(excelRows, uuidValue, creatorEmail);
       }
     }
+    System.out.println(rowCount - 1);
     //可能还有剩余的数据没有处理
     sendExcelRowsToQueue(excelRows, uuidValue, creatorEmail);
     //加入一个结束的标志
@@ -269,7 +272,8 @@ public class ExcelXmlParser {
         .setTableName(tableName)
         .setUuid(uuidValue)
         .setCreator_email(creatorEmail)
-        .setUploader_email(uploaderEmail);
+        .setUploader_email(uploaderEmail)
+        .setTotalRows(rowCount - 1);
     this.importSqlQueue.add(importedUnit);
     //清空缓存
     shareStrMap.clear();

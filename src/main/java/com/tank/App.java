@@ -3,6 +3,7 @@ package com.tank;
 import static com.tank.common.toolkit.DirectoryToolKit.*;
 import com.tank.dao.ImportLogDAO;
 import com.tank.domain.ImportedUnit;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -39,11 +40,15 @@ public class App {
       while (true) {
         try {
           ImportedUnit importedUnit = queue.take();
+          if (importedUnit.getTotalRows() != 0) {
+            importLogDAO.updateTotalRecordsByRecordFlag(importedUnit);
+          }
           if (importedUnit.isOver()) {
             importLogDAO.endImportedLog(importedUnit);
           } else {
             try {
               jdbcTemplate.execute(importedUnit.getInsertSql());
+
               System.out.println("inserted ok");
             } catch (DataAccessException e) {
               importLogDAO.importFailed(importedUnit, e.getLocalizedMessage());

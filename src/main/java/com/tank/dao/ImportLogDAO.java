@@ -30,6 +30,12 @@ import java.util.logging.Logger;
 @Service
 public class ImportLogDAO {
 
+  public void updateTotalRecordsByRecordFlag(ImportedUnit importedUnit) {
+    Object[] params = {importedUnit.getTotalRows(), importedUnit.getUuid()};
+    int updateStatus = this.oracleJdbcTemplate.update("update FSAMPLE_IMPORTING_LOGS set total_records = ? where record_flag = ?", params);
+    System.out.println(updateStatus);
+  }
+
 
   /**
    * 导入结束更改日志状态
@@ -108,7 +114,7 @@ public class ImportLogDAO {
     val desc = importedUnit.getDesc();
     val creator_email = importedUnit.getCreator_email();
     val uploader_email = importedUnit.getUploader_email();
-    val imported_time = new Date().getTime();
+    val imported_time = System.currentTimeMillis();
     val uuid = importedUnit.getUuid();
     val imported_status = "appending";
     val imported_desc = importedUnit.getImported_desc();

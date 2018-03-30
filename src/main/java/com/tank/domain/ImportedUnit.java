@@ -18,5 +18,6 @@ public class ImportedUnit {
   private String insertSql = null;
   private String uuid = null;
   private String uploader_email = null;
+  private int totalRows = 0;
 
 }
