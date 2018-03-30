@@ -76,26 +76,15 @@ public class ImportLogDAO {
   }
 
   public void importFailed(ImportedUnit importedUnit, String failure_reason) {
-    Unirest.setObjectMapper(new JacksonObjectMapper());
     val uuid = importedUnit.getUuid();
-    val creator_email = importedUnit.getCreator_email();
+    Object[] params = new Object[]{uuid,failure_reason};
 
-    val request = Unirest.post(endImportLogUrl)
-            .field("uuid", uuid)
-            .field("failure_reason", failure_reason)
-            .getHttpRequest();
-    val sb = this.importLogMessage(creator_email);
+    val sql = "insert into fsample_importing_failure(record_flag, reason) values(?, ?)";
     try {
-      val statusRes = HttpClientHelper.request(request, StatusRes.class).getBody();
-
-      if (statusRes.isSuccess()) {
-        sb.append(" import failed write log into mysql done ");
-        logger.log(INFO, sb.toString());
-      }
-    } catch (UnirestException e) {
-      sb.append(e.getLocalizedMessage());
-      logger.log(WARNING, sb.toString());
+      this.oracleJdbcTemplate.update(sql, params);
+    }catch(DataAccessException e) {
       e.printStackTrace();
+      logger.log(WARNING, e.getLocalizedMessage());
     }
   }
 
