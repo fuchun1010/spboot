@@ -145,7 +145,7 @@ public class SchemaToolKit {
 
         List<String> tableNames = previewtabledata.getTableNames();
         val sql = "select imported_table_name,imported_status,imported_by_email,imported_time from FSAMPLE_IMPORTING_LOGS  where imported_table_name in (:tablenames) and imported_time in " +
-                "(select max(imported_time) from FSAMPLE_IMPORTING_LOGS where imported_table_name in (:tablenames) " +
+                "(select max(imported_time) from FSAMPLE_IMPORTING_LOGS where visible = 1 and imported_table_name in (:tablenames) " +
                 "group by imported_table_name)";
 
         MapSqlParameterSource maps = new MapSqlParameterSource();
