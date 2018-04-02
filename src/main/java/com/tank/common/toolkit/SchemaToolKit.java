@@ -76,7 +76,7 @@ public class SchemaToolKit {
 
         try {
             Object[] params = new Object[]{recordFlag};
-            Object list = this.oracleJdbcTemplate.query("select * from " + tableName + " where recordFlag = ? ", params, new ResultSetExtractor<Object>() {
+            Object list = this.oracleJdbcTemplate.query("select * from " + tableName + " where recordFlag = ? and rownum <51 ", params, new ResultSetExtractor<Object>() {
                 public List extractData(ResultSet rs) throws SQLException, DataAccessException {
                     ResultSetMetaData data = rs.getMetaData();
                     List<List<String>> list = new ArrayList<>();
@@ -167,7 +167,6 @@ public class SchemaToolKit {
             while (rs.next()) {
                 PreviewTable previewTable = new PreviewTable(rs.getString("imported_table_name"), rs.getString("imported_status"), rs.getString("imported_by_email"), rs.getBigDecimal("imported_time"));
                 PreviewTables.add(previewTable);
-                System.out.println(PreviewTables);
             }
             return PreviewTables;
         });
