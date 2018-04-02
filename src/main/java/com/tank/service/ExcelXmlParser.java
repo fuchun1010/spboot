@@ -260,6 +260,7 @@ public class ExcelXmlParser {
       excelRows.add(row);
       val isFull = excelRows.size() == this.threshold + 1;
       if (isFull) {
+        //将一个excel的数据分批塞入队列，例如上传了100条，一批只处理10条，分10批次导入到oracle
         sendExcelRowsToQueue(excelRows, uuidValue, creatorEmail);
       }
     }
@@ -410,7 +411,7 @@ public class ExcelXmlParser {
     return mapped;
   }
 
-  @Autowired
+  @Autowired//写入批次数据到oracle的队列
   private BlockingQueue<ImportedUnit> importSqlQueue;
 
   @Value("${oracle.threshold}")

@@ -36,6 +36,7 @@ public class App {
     createOrGetUpLoadPath("data");
     createOrGetUpLoadPath("schema");
     createLogDir("logs");
+    //将队列里的导入批次单元一组一组取出来，并开始正式写入到oracle里去
     Executors.newCachedThreadPool().execute(() -> {
       while (true) {
         try {

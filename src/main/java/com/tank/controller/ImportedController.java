@@ -52,31 +52,34 @@ public class ImportedController {
    */
   @PostMapping(path = "/import-data/{schemaId}")
   public DeferredResult<ResponseEntity<Map<String, String>>> importDataFromExcel(
-      @NonNull @PathVariable String schemaId,
-      @RequestParam MultipartFile file,
-      @RequestParam String desc,
-      @RequestHeader(value = "email") String uploaderEmail
+      @NonNull @PathVariable String schemaId,  //上传的表的id
+      @RequestParam MultipartFile file, //上传的文件
+      @RequestParam String desc, //上传时填写的描述
+      @RequestHeader(value = "email") String uploaderEmail //上传人email
   ) {
     val response = new DeferredResult<ResponseEntity<Map<String, String>>>();
     val status = new HashMap<String, String>(16);
 
 
     try (ByteArrayInputStream in = new ByteArrayInputStream(file.getBytes())) {
+      //根据表id获取这张表的信息，例如这张表的所有字段，然后存在SchemaRes这个类里
       Optional<SchemaRes> schemaOpt = this.schemaDAO.fetchSchemaResponse(schemaId);
       if (schemaOpt.isPresent()) {
         SchemaRes schemaRes = schemaOpt.get();
         schemaRes.setUploader_email(uploaderEmail).setImported_desc(desc);
+
         val fileName = file.getOriginalFilename();
         val dataDir = DirectoryToolKit.createOrGetUpLoadPath("data");
         val dataFilePath = dataDir + File.separator + fileName;
-
+        //放置上传的文件到指定路径
         Files.copy(in, new File(dataFilePath).toPath(), REPLACE_EXISTING);
         ZipFile zipFile = new ZipFile(dataFilePath);
         val unZipDir = DirectoryToolKit.createDataUnzipDir(dataFilePath);
         zipFile.extractAll(unZipDir);
-
+        //创建一个线程池，提交schemaRes
         Executors.newCachedThreadPool().execute(() -> {
           try {
+            //准备解析excel并导入
             this.excelXmlParser.importExcelToOracle(fileName, schemaRes);
           } catch (Exception e) {
             log.error(e.getMessage());
