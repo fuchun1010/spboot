@@ -4,7 +4,7 @@ package com.tank.message.report;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 @Data
 @Accessors(chain = true)
@@ -16,6 +16,6 @@ public class ReportUnit {
     private String report_id = null;
     private String report_name = null;
     private String user_email = null;
-    private Date access_time = null;
+    private Timestamp access_time = null;
 
 }

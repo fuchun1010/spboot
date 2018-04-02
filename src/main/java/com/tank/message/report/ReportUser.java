@@ -5,13 +5,16 @@ import lombok.Data;
 
 import java.sql.Timestamp;
 
+/**
+ * 用来接收返回的数据
+ */
+
 @Data
 @AllArgsConstructor
 public class ReportUser {
 
-    //private String user_id;
     private String user_name;
-    //private String count_user_name;
-    private Timestamp to_char;
+    private String sum_user;
+    private Timestamp last_access_time;
 
 }

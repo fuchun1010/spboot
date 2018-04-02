@@ -28,7 +28,7 @@ import java.util.List;
 public class ReportToolkit {
 
     /**
-     * 报表写入数据  表名：fample_report_access_stats
+     * 报表插入数据  表名：fample_report_access_stats
      * @author xyc
      * @param reportUnit
      */
@@ -40,9 +40,7 @@ public class ReportToolkit {
         val report_id = reportUnit.getReport_id();
         val user_email = reportUnit.getUser_email();
 
-        Date now = new Date();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        // access_time= dateFormat.format(now);
+        Date now = new Date();   //// 后台自动获取当前时间，添加到params里面   前端不需要传入
         val sql = "insert into fample_report_access_stats(user_id,user_name,report_id,report_name,user_email,access_time) values" +
                 "( ? , ? , ? , ? , ? , ? ) ";
         try {
@@ -58,6 +56,13 @@ public class ReportToolkit {
     }
 
 
+    /**
+     * 查询报表数据
+     * 报表名称、总查看次数、总用户数(有多少用户查看过)、最后查看的时间
+     * @param reportAccessData
+     * @return
+     * @throws DataAccessException
+     */
     public List<ReportAccess> reportAccessStats(@NonNull ReportAccessData reportAccessData) throws DataAccessException {
 
         List<String> tableNames = reportAccessData.getTableNames();
@@ -80,7 +85,7 @@ public class ReportToolkit {
     }
 
     /**
-     * 用户报表 写入数据
+     * 用户报表插入数据
      * @param reportUserUnit
      */
     public void reportInsertUser(@NonNull ReportUserUnit reportUserUnit){
@@ -89,7 +94,7 @@ public class ReportToolkit {
         val user_id = reportUserUnit.getUser_id();
         val user_name = reportUserUnit.getUser_name();
 
-        Date now = new Date();
+        Date now = new Date();  // 后台自动获取当前时间，添加到params里面   前端不需要传入
 //        Timestamp ts = new Timestamp(System.currentTimeMillis());
 //        now = ts;
 //        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -106,11 +111,19 @@ public class ReportToolkit {
     }
 
 
+    /**
+     * 查询报表数据
+     * 报表名称、总查看次数、总用户数(有多少用户查看过)、最后查看的时间
+     * @param reportUserData
+     * @return
+     * @throws DataAccessException
+     */
     public List<ReportUser> reportUserLogin(@NonNull ReportUserData reportUserData) throws DataAccessException {
 
         List<String> userNames = reportUserData.getUserNames();
-        val sql = "select user_name,count(user_name),to_char(sysdate,'yyyy-mm-dd hh24:mi:ss') from fample_user_login_statistics where user_name in (:usernames) " +
-                "group by user_name,to_char";
+        // 自己查询的 where user_name in (:usernames)
+        val sql = "select user_name,count(user_name) as sum_user,max(to_char(access_time,'yyyy-mm-dd hh24:mi:ss')) as last_access_time from fample_user_login_statistics " +
+                "group by user_name ";
 
         MapSqlParameterSource maps = new MapSqlParameterSource();
         maps.addValue("usernames", userNames);
@@ -118,7 +131,7 @@ public class ReportToolkit {
         List<ReportUser> res  = template.query(sql,maps,rs ->{
             List<ReportUser> ReportUsers = new LinkedList<>();
             while (rs.next()) {
-                ReportUser reportUser = new ReportUser(rs.getString("user_name"),rs.getTimestamp("to_char"));
+                ReportUser reportUser = new ReportUser(rs.getString("user_name"),rs.getString("sum_user"),rs.getTimestamp("last_access_time"));
                 ReportUsers.add(reportUser);
             }
             return ReportUsers;

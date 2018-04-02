@@ -68,7 +68,7 @@ public class SchemaToolKit {
     }
 
     /**
-     * 表格  查询数据
+     * 查询表前50条数据，在预览表的时候不展示recordFlag 这个字段
      *
      * @throws DataAccessException
      */
@@ -145,8 +145,8 @@ public class SchemaToolKit {
     }
 
     /**
-     * 获取指定的数据记录  preview-tables-status
-     *
+     * 查询指定的数据记录  preview-tables-status
+     * 查询表记录：添加时间为最后一次，可以查询多个表记录
      * @param  previewtabledata
      * @return
      * @author XYC

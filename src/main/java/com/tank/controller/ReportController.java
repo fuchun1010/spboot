@@ -30,7 +30,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class ReportController {
 
     /**
-     * 写入数据
+     * 报表插入数据
      * @param reportUnit
      * @author xyc
      * @return
@@ -53,6 +53,12 @@ public class ReportController {
         }
     }
 
+    /**
+     * 查询报表数据
+     * 报表名称、总查看次数、总用户数(有多少用户查看过)
+     * @param reportAccessData
+     * @return
+     */
     @PostMapping(
             path = "/reported-access-stats",
             produces = APPLICATION_JSON_VALUE
@@ -72,7 +78,7 @@ public class ReportController {
 
 
     /**
-     * 用户报表写入数据  表名：fample_report_access_stats
+     * 用户报表插入数据
      * @param reportUserUnit
      * @return
      */
@@ -94,6 +100,12 @@ public class ReportController {
         }
     }
 
+    /**
+     * 用户登录统计：日期、时间、用户、次数
+     * 用户、每个用户登录的总次数，最后登录的时间
+     * @param reportUserData
+     * @return
+     */
     @PostMapping(
             path = "/reported-user-login",
             produces = APPLICATION_JSON_VALUE

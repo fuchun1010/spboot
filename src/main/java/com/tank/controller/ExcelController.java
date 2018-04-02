@@ -90,6 +90,12 @@ public class ExcelController {
         }
     }
 
+    /**
+     * 查询表前50条数据
+     * @param tableName
+     * @param recordFlag
+     * @return
+     */
     @GetMapping(
             path = "/preview-data/{tableName}/{recordFlag}",
             produces = APPLICATION_JSON_VALUE
