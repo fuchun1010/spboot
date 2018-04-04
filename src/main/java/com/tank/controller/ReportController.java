@@ -5,6 +5,7 @@ import com.tank.common.toolkit.ReportToolkit;
 import com.tank.message.report.*;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import oracle.jdbc.proxy.annotation.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -76,6 +77,51 @@ public class ReportController {
         }
     }
 
+    /**
+     * 业务访问统计：用户名、次数、报表
+     * @param reportAccessData
+     * @return
+     */
+    @PostMapping(
+            path = "/business_access_stats",
+            produces = APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<List<ReportAccessUser>> reportBusinessAccessStatistics(@RequestBody ReportAccessData reportAccessData) {
+
+        val status = new ArrayList<ReportAccessUser>();
+        try{
+            List<ReportAccessUser> list = this.reportToolkit.reportBusinessAccessStatistics(reportAccessData);
+            return ResponseEntity.status(HttpStatus.OK).body(list);
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
+        }
+    }
+
+    /**
+     * 报表访问统计：日期、时间、用户、访问报表名称；
+     * @param reportUserAccessData
+     * @return
+     */
+    @PostMapping(
+            path = "/reported_user_access",
+            produces = APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<List<ReportUserBusiness>> reportUserBusinessAccess(@RequestBody ReportUserAccessData reportUserAccessData) {
+
+        val status = new ArrayList<ReportUserBusiness>();
+        try{
+            List<ReportUserBusiness> list = this.reportToolkit.reportUserBusinessAccess(reportUserAccessData);
+            return ResponseEntity.status(HttpStatus.OK).body(list);
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
+        }
+    }
+
+
 
     /**
      * 用户报表插入数据
@@ -122,10 +168,6 @@ public class ReportController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
         }
     }
-
-
-
-
 
     @Autowired
     private ReportToolkit reportToolkit;

@@ -11,13 +11,11 @@ import java.util.Date;
  *
  */
 @Data
-@AllArgsConstructor
+@AllArgsConstructor   //包含所有变量
 public class ReportAccess {
-
-    private String user_id;
-    private String user_name;
-    private String report_id;
     private String report_name;
+    private String total_report_name;  //每个表记录被查看总次数
+    private String total_user;   //总用户数(有多少用户查看过)
 
 
 }

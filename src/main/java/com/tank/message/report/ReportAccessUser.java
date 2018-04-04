@@ -3,18 +3,14 @@ package com.tank.message.report;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.sql.Timestamp;
-
 /**
- * 用来接收返回的数据
+ * 接收返回来的数据
  */
-
 @Data
 @AllArgsConstructor
-public class ReportUser {
-
-    private String user_name;
+public class ReportAccessUser {
+    private String report_name;
+    private String total_report_name;
     private String total_user;
-    private Timestamp last_access_time;
 
 }

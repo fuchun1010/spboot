@@ -161,6 +161,13 @@ public class ExcelController {
 
     }
 
+    /**
+     * 查询指定的数据记录  preview-tables-status
+     * 查询表记录：添加时间为最后一次，可以查询多个表记录
+     * @param  previewtabledata
+     * @return
+     * @author XYC
+     */
     @PostMapping(
             path = "/preview-tables-status",
             produces = APPLICATION_JSON_VALUE
