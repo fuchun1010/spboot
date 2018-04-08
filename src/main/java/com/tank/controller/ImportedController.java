@@ -57,6 +57,8 @@ public class ImportedController {
       @RequestParam String desc, //上传时填写的描述
       @RequestHeader(value = "email") String uploaderEmail //上传人email
   ) {
+    log.info("###start importing data ###");
+    System.out.println("###start importing data ###");
     val response = new DeferredResult<ResponseEntity<Map<String, String>>>();
     val status = new HashMap<String, String>(16);
 
