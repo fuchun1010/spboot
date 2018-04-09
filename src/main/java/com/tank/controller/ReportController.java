@@ -5,13 +5,11 @@ import com.tank.common.toolkit.ReportToolkit;
 import com.tank.message.report.*;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import oracle.jdbc.proxy.annotation.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +30,7 @@ public class ReportController {
 
     /**
      * 报表插入数据
+     * path 后面是 http 的接口
      * @param reportUnit
      * @author xyc
      * @return

@@ -1,27 +1,18 @@
 package com.tank.dao;
 
-import com.mashape.unirest.http.HttpClientHelper;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import com.tank.common.JacksonObjectMapper;
 import com.tank.domain.ImportedUnit;
-import com.tank.message.status.StatusRes;
 import lombok.NonNull;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Service;
 
 import static java.util.logging.Level.*;
-
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -34,6 +25,7 @@ public class ImportLogDAO {
     Object[] params = {importedUnit.getTotalRows(), importedUnit.getUuid()};
     int updateStatus = this.oracleJdbcTemplate.update("update FSAMPLE_IMPORTING_LOGS set total_records = ? where record_flag = ?", params);
     System.out.println(updateStatus);
+
   }
 
 
@@ -72,6 +64,9 @@ public class ImportLogDAO {
       logger.log(WARNING, sb.toString());
       e.printStackTrace();
     }
+
+
+
 
   }
 
@@ -121,6 +116,34 @@ public class ImportLogDAO {
       } catch (Exception e) {
         e.printStackTrace();
       }
+  }
+
+  /**
+   * 根据 RECORDFLAG 查询出上传成功的条数
+   * @param importedUnit
+   */
+  public int importedSuccessRcordsNumber(ImportedUnit importedUnit) {
+    val tableName = importedUnit.getTableName();
+    val recordflag = importedUnit.getUuid();
+    val sql = " select count(*) as cnt from " + tableName + " where RECORDFLAG = ? ";
+      int importedNum = 0;
+    try {
+        Object[] params = {recordflag};
+        importedNum = this.oracleJdbcTemplate.queryForObject(sql, params, (rs, rowNum) -> rs.getInt("cnt"));
+        System.out.println("方法里面" + importedNum);
+    }catch (NullPointerException e){
+      e.printStackTrace();
+    }
+    return importedNum;
+  }
+
+
+  public void updateSuccessRecords(ImportedUnit importedUnit){
+    val success_records = importedUnit.getSuccess_records();
+    val record_flag = importedUnit.getUuid();
+    Object[] param = {success_records, record_flag};
+    int updateStatus = this.oracleJdbcTemplate.update("update FSAMPLE_IMPORTING_LOGS set success_records = ? where record_flag = ?", param);
+    System.out.println(updateStatus);
   }
 
 

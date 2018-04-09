@@ -6,6 +6,7 @@ import lombok.Data;
 import java.sql.Timestamp;
 
 /**
+ * reportUserLogin
  * 用来接收返回的数据
  */
 

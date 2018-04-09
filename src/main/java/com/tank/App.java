@@ -44,6 +44,9 @@ public class App {
           if (importedUnit.getTotalRows() != 0) {
             importLogDAO.updateTotalRecordsByRecordFlag(importedUnit);
           }
+          if(importedUnit.getSuccess_records() != 0) {
+            importLogDAO.updateSuccessRecords(importedUnit);
+          }
           if (importedUnit.isOver()) {
             importLogDAO.endImportedLog(importedUnit);
           } else {
@@ -58,6 +61,8 @@ public class App {
               //TODO call api
             }
           }
+
+
 
         } catch (InterruptedException e) {
           logger.log(WARNING, " write oracle exception:" + e.getLocalizedMessage());

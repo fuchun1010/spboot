@@ -91,7 +91,6 @@ public class ImportedController {
           }
         });
 
-
         if (!response.hasResult()) {
           status.putIfAbsent("status", "success");
           response.setResult(ResponseEntity.status(ACCEPTED).body(status));

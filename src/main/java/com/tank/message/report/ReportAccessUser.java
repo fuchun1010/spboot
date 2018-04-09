@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
- * 接收返回来的数据
+ * reportBusinessAccessStatistics  方法
+ * 用于接收返回来的数据
  */
 @Data
 @AllArgsConstructor

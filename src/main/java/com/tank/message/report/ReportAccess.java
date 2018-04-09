@@ -6,7 +6,8 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * 接收返回的数据
+ * reportAccessStats  方法
+ * 本类用于接收返回的数据
  * @author xyc
  *
  */
