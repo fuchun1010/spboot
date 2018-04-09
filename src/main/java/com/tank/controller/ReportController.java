@@ -83,7 +83,7 @@ public class ReportController {
      * @return
      */
     @PostMapping(
-            path = "/business_access_stats",
+            path = "/business-access-stats",
             produces = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<List<ReportAccessUser>> reportBusinessAccessStatistics(@RequestBody ReportAccessData reportAccessData) {
@@ -105,7 +105,7 @@ public class ReportController {
      * @return
      */
     @PostMapping(
-            path = "/reported_user_access",
+            path = "/reported-user-access",
             produces = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<List<ReportUserBusiness>> reportUserBusinessAccess(@RequestBody ReportUserAccessData reportUserAccessData) {
