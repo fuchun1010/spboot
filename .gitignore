@@ -6,3 +6,4 @@ logs/log.log
 .idea/
 download/
 upload/
+*.DS_Store
