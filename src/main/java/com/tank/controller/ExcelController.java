@@ -140,6 +140,7 @@ public class ExcelController {
 
     /**
      *  获取表名上传历史信息  fsample_importing_logs
+     *  上传成功数、上传总数
      * @param tableName
      * @author XYC
      * @return
@@ -156,9 +157,7 @@ public class ExcelController {
         } catch (DataAccessException e) {
             log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
-
         }
-
     }
 
     /**

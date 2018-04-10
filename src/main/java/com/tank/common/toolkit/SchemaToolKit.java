@@ -117,15 +117,15 @@ public class SchemaToolKit {
 
     /**
      * 获取表名上传历史信息  fsample_importing_logs
-     *
+     * 上传成功数、上传总数
      * @param tableName
      * @return
      * @author XYC
      */
     public List<Map<String, String>> importedPreviewInfo(@NonNull String tableName) throws DataAccessException {
         Object[] params = new Object[]{tableName};
-        Object list = this.oracleJdbcTemplate.query(" select fil.RECORD_FLAG, fil.IMPORTED_TABLE_NAME,fil.imported_desc,fil.imported_status,fil.imported_by_email,fil.IMPORTED_TIME " +
-                "from FSAMPLE_IMPORTING_LOGS fil where imported_table_name = ? and visible = 1 ",
+        Object list = this.oracleJdbcTemplate.query(" select RECORD_FLAG,IMPORTED_TABLE_NAME,imported_desc,imported_status,imported_by_email," +
+                        "TOTAL_RECORDS,SUCCESS_RECORDS,IMPORTED_TIME from FSAMPLE_IMPORTING_LOGS where imported_table_name = ? and visible = 1 ",
                 params, (rs) -> {
                     ResultSetMetaData data = rs.getMetaData();
                     List<Map<String, String>> list1 = new ArrayList<>();
