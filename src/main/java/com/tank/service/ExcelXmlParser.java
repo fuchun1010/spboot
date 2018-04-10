@@ -98,7 +98,6 @@ public class ExcelXmlParser {
       throws FileNotFoundException, DocumentException {
     Iterator<Element> it = rowNode.elementIterator();
     ExcelRow row = new ExcelRow();
-
     while (it.hasNext()) {
       Element node = it.next();
       Attribute attribute = node.attribute("r");
@@ -132,8 +131,17 @@ public class ExcelXmlParser {
         }
       }
 
+      Element children = null;
+      Iterator iterator = node.elementIterator();
+      if (iterator.hasNext()) {
+        System.out.println(node.getData());
+        children = (Element) node.elementIterator().next();
+      } else {
+        cell.setValue(null);
+        row.addCell(cell);
+        continue;
+      }
 
-      Element children = (Element) node.elementIterator().next();
       Object data = children.getData();
       if (Objects.isNull(data)) {
         continue;
@@ -365,6 +373,11 @@ public class ExcelXmlParser {
     }
     val fileIndex = 0;
     val files = sheetsDir.listFiles();
+    for (File file: files) {
+      if ("sheet1.xml".equalsIgnoreCase(file.getName())) {
+        return file.getAbsolutePath();
+      }
+    }
     if (!Objects.isNull(files)) {
       return files[fileIndex].getAbsolutePath();
     }

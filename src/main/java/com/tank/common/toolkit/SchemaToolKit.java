@@ -98,8 +98,12 @@ public class SchemaToolKit {
                             if (recordFlagIndex > 0 && i == recordFlagIndex) {
                                 continue;
                             }
-                            String columnValue = rs.getObject(i).toString();
-                            list2.add(columnValue);
+                            val columnVal = rs.getObject(i);
+                            if (null == columnVal) {
+                                list2.add("");
+                            } else {
+                                list2.add(columnVal.toString());
+                            }
 
                         }
                         list.add(list2);

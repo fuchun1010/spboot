@@ -10,4 +10,5 @@ public class SchemaItem {
   private int index;
   private String type;
   private String name;
+  private String unique;
 }
