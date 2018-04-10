@@ -44,15 +44,16 @@ public class App {
           if (importedUnit.getTotalRows() != 0) {
             importLogDAO.updateTotalRecordsByRecordFlag(importedUnit);
           }
-          if(importedUnit.getSuccess_records() != 0) {
-            importLogDAO.updateSuccessRecords(importedUnit);
-          }
+          // 注：逻辑顺序不能乱，一步一步往下走
           if (importedUnit.isOver()) {
             importLogDAO.endImportedLog(importedUnit);
+            System.out.println("上传结束");
+            //上传结束后  立即获取上传成功的总条数
+            importLogDAO.importedSuccessRcordsNumber(importedUnit);
+
           } else {
             try {
               jdbcTemplate.execute(importedUnit.getInsertSql());
-
               System.out.println("inserted ok");
             } catch (DataAccessException e) {
               importLogDAO.importFailed(importedUnit, e.getLocalizedMessage());
@@ -61,8 +62,10 @@ public class App {
               //TODO call api
             }
           }
-
-
+          //更改数据库里面 上传成功数据的条数
+          if(importedUnit.getSuccess_records() != 0) {
+            importLogDAO.updateSuccessRecords(importedUnit);
+          }
 
         } catch (InterruptedException e) {
           logger.log(WARNING, " write oracle exception:" + e.getLocalizedMessage());

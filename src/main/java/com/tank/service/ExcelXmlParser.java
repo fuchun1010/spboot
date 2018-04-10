@@ -270,33 +270,20 @@ public class ExcelXmlParser {
     //可能还有剩余的数据没有处理
     sendExcelRowsToQueue(excelRows, uuidValue, creatorEmail);
 
-//    int importedNum =0;
-//    val recordflag = uuid;
-//    Object[] params = {recordflag};
-//    val sql = " select count(*) as cnt from " + tableName + " where RECORDFLAG = ? ";
-//    importedNum = this.oracleJdbcTemplate.queryForObject(sql, params, (rs, rowNum) -> rs.getInt("cnt"));
-//    System.out.println("方法里面" + importedNum);
-
-
     //加入一个结束的标志
     ImportedUnit importedUnit = new ImportedUnit();
-
     importedUnit.setOver(true)
         .setTableName(tableName)
         .setUuid(uuidValue)
         .setCreator_email(creatorEmail)
         .setUploader_email(uploaderEmail)
         .setTotalRows(rowCount - 1);
-
-    ImportLogDAO dao = new ImportLogDAO();
-    int rowSuccess = dao.importedSuccessRcordsNumber(importedUnit);
-    importedUnit.setSuccess_records(rowSuccess);
-
     this.importSqlQueue.add(importedUnit);
 
     //清空缓存
     shareStrMap.clear();
     excelRows.clear();
+
     val end = System.currentTimeMillis();
     System.out.println("total cost--->" + (end - start));
 

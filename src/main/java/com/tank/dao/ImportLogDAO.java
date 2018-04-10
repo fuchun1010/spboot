@@ -64,10 +64,6 @@ public class ImportLogDAO {
       logger.log(WARNING, sb.toString());
       e.printStackTrace();
     }
-
-
-
-
   }
 
   public void importFailed(ImportedUnit importedUnit, String failure_reason) {
@@ -122,28 +118,26 @@ public class ImportLogDAO {
    * 根据 RECORDFLAG 查询出上传成功的条数
    * @param importedUnit
    */
-  public int importedSuccessRcordsNumber(ImportedUnit importedUnit) {
+  public void importedSuccessRcordsNumber(ImportedUnit importedUnit) {
     val tableName = importedUnit.getTableName();
     val recordflag = importedUnit.getUuid();
-    val sql = " select count(*) as cnt from " + tableName + " where RECORDFLAG = ? ";
-      int importedNum = 0;
-    try {
-        Object[] params = {recordflag};
-        importedNum = this.oracleJdbcTemplate.queryForObject(sql, params, (rs, rowNum) -> rs.getInt("cnt"));
-        System.out.println("方法里面" + importedNum);
-    }catch (NullPointerException e){
-      e.printStackTrace();
-    }
-    return importedNum;
+    val sql = " select count(*) as totalRows from " + tableName + " where recordflag = ? ";
+    Object[] params = {recordflag};
+    int importedNum = this.oracleJdbcTemplate.queryForObject(sql, params, (rs, rowNum) -> rs.getInt("totalRows"));
+    System.out.println("成功:"+ importedNum);
+    importedUnit.setSuccess_records(importedNum);   //把获取的总数传给 success_records
   }
 
-
+  /**
+   * 得到上传成功总条数，根据recordFlag ，更改数据库上传成功的总条数，
+   * @param importedUnit
+   */
   public void updateSuccessRecords(ImportedUnit importedUnit){
     val success_records = importedUnit.getSuccess_records();
     val record_flag = importedUnit.getUuid();
     Object[] param = {success_records, record_flag};
     int updateStatus = this.oracleJdbcTemplate.update("update FSAMPLE_IMPORTING_LOGS set success_records = ? where record_flag = ?", param);
-    System.out.println(updateStatus);
+    System.out.println(updateStatus);//成功打印 1
   }
 
 
