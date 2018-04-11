@@ -8,6 +8,7 @@ import com.tank.domain.ExcelRow;
 import com.tank.domain.ImportedUnit;
 import com.tank.message.schema.SchemaRes;
 import lombok.NonNull;
+import lombok.experimental.var;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.dom4j.Attribute;
@@ -25,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Stream;
 
 import static java.io.File.separator;
 
@@ -371,15 +373,11 @@ public class ExcelXmlParser {
     if (!sheetsDir.exists()) {
       throw new FileNotFoundException(fileName + "解压处理异常");
     }
-    val fileIndex = 0;
     val files = sheetsDir.listFiles();
-    for (File file: files) {
-      if ("sheet1.xml".equalsIgnoreCase(file.getName())) {
-        return file.getAbsolutePath();
-      }
-    }
+    val firstSheet = Stream.of(files).filter(file -> !file.isDirectory()).findFirst().get().getAbsolutePath();
+
     if (!Objects.isNull(files)) {
-      return files[fileIndex].getAbsolutePath();
+      return firstSheet;
     }
     return "failure";
   }
