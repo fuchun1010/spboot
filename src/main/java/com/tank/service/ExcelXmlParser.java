@@ -351,7 +351,11 @@ public class ExcelXmlParser {
     try (FileInputStream in = new FileInputStream(realPath)) {
       Document document = reader.read(in);
       Element root = document.getRootElement();
-      Attribute attribute = root.element("extLst").element("ext").attribute("xmlns:x15");
+      Element extLst = root.element("extLst");
+      if(Objects.isNull(extLst)) {
+        return "2008";
+      }
+      Attribute attribute = extLst.element("ext").attribute("xmlns:x15");
       if (Objects.isNull(attribute)) {
         log.info("fileName" + " version is:2010");
         return "2010";
