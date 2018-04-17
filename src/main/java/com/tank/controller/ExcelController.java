@@ -92,6 +92,7 @@ public class ExcelController {
 
     /**
      * 查询表前50条数据
+     *
      * @param tableName
      * @param recordFlag
      * @return
@@ -100,9 +101,9 @@ public class ExcelController {
             path = "/preview-data/{tableName}/{recordFlag}",
             produces = APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<List<List<String>>> PreviewExcel(@PathVariable String tableName, @PathVariable String recordFlag){
+    public ResponseEntity<List<List<String>>> PreviewExcel(@PathVariable String tableName, @PathVariable String recordFlag) {
         val status = new ArrayList<List<String>>();
-        try{
+        try {
             List<List<String>> list = this.schemaToolKit.preViewExcel(tableName, recordFlag);
             return ResponseEntity.status(HttpStatus.OK).body(list);
         } catch (DataAccessException e) {
@@ -113,46 +114,48 @@ public class ExcelController {
 
 
     /**
-     *  删除表数据
-     *  @author XYC
+     * 删除表数据
+     *
      * @param
      * @return
+     * @author XYC
      */
 
     @DeleteMapping(
-           path = "/drop-table-data",
-           produces = APPLICATION_JSON_VALUE
+            path = "/drop-table-data",
+            produces = APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Map<String, String>> deleteTable(@RequestBody DeleteTableData tableData,
-             @RequestHeader(value = "email") String email) {
+                                                           @RequestHeader(value = "email") String email) {
         val status = new HashMap<String, String>(16);
-        try{
+        try {
             this.schemaToolKit.deleteSchema(tableData);
             log.info("###> deleteSchema ==> by email: " + email + " , tableName: " + tableData.getTableName() + " , recordFlag: " + tableData.getRecordFlag());
-            status.putIfAbsent("success","200");
+            status.putIfAbsent("success", "200");
             return ResponseEntity.status(HttpStatus.OK).body(status);
-         } catch (DataAccessException e) {
+        } catch (DataAccessException e) {
             log.error(e.getMessage());
             status.putIfAbsent("error", e.getLocalizedMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
-       }
+        }
     }
 
     /**
-     *  获取表名上传历史信息  fsample_importing_logs
-     *  上传成功数、上传总数
+     * 获取表名上传历史信息  fsample_importing_logs
+     * 上传成功数、上传总数
+     *
      * @param tableName
-     * @author XYC
      * @return
+     * @author XYC
      */
     @GetMapping(
             path = "/preview-imported-logs/{tableName}",
             produces = APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<List<Map<String,String>>> importedPreviewInfo(@PathVariable String tableName) {
-        val status = new ArrayList<Map<String,String>>();
-        try{
-            List<Map<String,String>> list = this.schemaToolKit.importedPreviewInfo(tableName);
+    public ResponseEntity<List<Map<String, String>>> importedPreviewInfo(@PathVariable String tableName) {
+        val status = new ArrayList<Map<String, String>>();
+        try {
+            List<Map<String, String>> list = this.schemaToolKit.importedPreviewInfo(tableName);
             return ResponseEntity.status(HttpStatus.OK).body(list);
         } catch (DataAccessException e) {
             log.error(e.getMessage());
@@ -163,7 +166,8 @@ public class ExcelController {
     /**
      * 查询指定的数据记录  preview-tables-status
      * 查询表记录：添加时间为最后一次，可以查询多个表记录
-     * @param  previewtabledata
+     *
+     * @param previewtabledata
      * @return
      * @author XYC
      */
@@ -173,7 +177,7 @@ public class ExcelController {
     )
     public ResponseEntity<List<PreviewTable>> previewTablesStatus(@RequestBody PreviewTableData previewtabledata) {
 
-        try{
+        try {
             List<PreviewTable> list = this.schemaToolKit.previewTablesStatus(previewtabledata);
             return ResponseEntity.status(HttpStatus.OK).body(list);
         } catch (DataAccessException e) {
@@ -183,7 +187,31 @@ public class ExcelController {
         }
     }
 
+    /**
+     * 删除schema
+     *
+     * @param schema
+     * @param email
+     * @return
+     */
+    @PostMapping(
+            path = "/dropschema/{schema}",
+            produces = APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Map<String, String>> dropSchema(@PathVariable String schema, @RequestHeader(value = "email") String email) {
 
+        val status = new HashMap<String, String>(16);
+        try {
+            this.schemaToolKit.dropSchema(schema, email);
+            log.info("###> dropSchema ==> by email: " + email + " , schema: " + schema);
+            status.putIfAbsent("success", "200");
+            return ResponseEntity.status(HttpStatus.OK).body(status);
+        } catch (DataAccessException e) {
+            log.error(e.getMessage());
+            status.putIfAbsent("error", e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(status);
+        }
+    }
 
     @Autowired
     private SchemaToolKit schemaToolKit;
