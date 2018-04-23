@@ -194,6 +194,7 @@ public class ExcelController {
      * @param email
      * @return
      */
+    //curl -i -X POST -H "Content-Type: application/json" -H "email: seethru@fullsample.com" http://localhost:8888/excel/dropschema/test
     @PostMapping(
             path = "/dropschema/{schema}",
             produces = APPLICATION_JSON_VALUE
