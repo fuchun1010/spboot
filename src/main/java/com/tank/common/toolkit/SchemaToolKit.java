@@ -19,7 +19,6 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -221,7 +220,6 @@ public class SchemaToolKit {
      * @param email
      * @throws DataAccessException
      */
-    @Transactional
     public void dropSchema(@NonNull String schema, String email) throws DataAccessException {
             val sql = "drop tablespace " + schema + " including contents and datafiles CASCADE CONSTRAINTS";
 
