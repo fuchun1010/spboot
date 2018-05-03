@@ -221,7 +221,7 @@ public class SchemaToolKit {
      * @throws DataAccessException
      */
     public void dropSchema(@NonNull String schema, String email) throws DataAccessException {
-            val sql = "drop tablespace " + schema + " including contents and datafiles CASCADE CONSTRAINTS";
+            val sql = "drop table " + schema;
 
             this.oracleJdbcTemplate.execute(sql);
             this.oracleJdbcTemplate.update("insert into FSAMPLE_DROP_LOGS(drop_schema_name,drop_by_email,droped_time) values('" + schema + "','" + email + "',sysdate)");
