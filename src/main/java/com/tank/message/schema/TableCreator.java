@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class TableCreator {
 
-    private String sqls;
+    private String[] sqls;
 }

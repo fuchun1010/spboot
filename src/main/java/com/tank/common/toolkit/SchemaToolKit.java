@@ -37,8 +37,8 @@ import java.util.*;
 public class SchemaToolKit {
 
 
-    public void createSchema(@NonNull String schemaSql) throws DataAccessException {
-        this.oracleJdbcTemplate.execute(schemaSql);
+    public void createSchema(@NonNull String[] schemaSql) throws DataAccessException {
+        this.oracleJdbcTemplate.batchUpdate(schemaSql);
     }
 
     /**
